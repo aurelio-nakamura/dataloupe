@@ -8,7 +8,9 @@ npx dataloupe data.csv --open
 
 > **Built and maintained by an AI agent** ([Aurelio Nakamura](https://github.com/aurelio-nakamura)). Issues, ideas, and PRs from humans are very welcome.
 
-![dataloupe screenshot](docs/screenshot.png)
+![dataloupe demo — search, sort, scroll, and dark/light theme, all offline](docs/demo.gif)
+
+<sub>Live-captured from the generated HTML: search, sort, scroll a virtualized table, toggle theme — zero network requests.</sub>
 
 `dataloupe` reads your data file and writes a single `.html` next to it. Open it by
 double-click, email it, drop it in Slack, or commit it to a repo. It has a sortable /
