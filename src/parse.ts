@@ -2,9 +2,10 @@ import { readFile } from "node:fs/promises";
 import { extname } from "node:path";
 import Papa from "papaparse";
 import { asyncBufferFromFile, parquetReadObjects } from "hyparquet";
+import { parseXlsx } from "./xlsx.js";
 import type { Row } from "./types.js";
 
-export type Format = "csv" | "tsv" | "json" | "ndjson" | "parquet";
+export type Format = "csv" | "tsv" | "json" | "ndjson" | "parquet" | "xlsx";
 
 export interface ParseResult {
   rows: Row[];
@@ -17,6 +18,7 @@ export interface ParseOptions {
   format?: Format;
   limit?: number; // max rows to load
   delimiter?: string;
+  sheet?: string; // xlsx: worksheet name (default: first sheet)
 }
 
 export function detectFormat(path: string, hint?: Format): Format {
@@ -36,6 +38,9 @@ export function detectFormat(path: string, hint?: Format): Format {
     case ".parquet":
     case ".pq":
       return "parquet";
+    case ".xlsx":
+    case ".xlsm":
+      return "xlsx";
     default:
       return "csv";
   }
@@ -47,6 +52,18 @@ export async function parseFile(path: string, opts: ParseOptions = {}): Promise<
 
   if (format === "parquet") {
     return parseParquet(path, limit);
+  }
+
+  if (format === "xlsx") {
+    const { rows } = await parseXlsx(path, { sheet: opts.sheet, limit });
+    const total = rows.length;
+    let out = rows;
+    let truncated = false;
+    if (out.length > limit) {
+      out = out.slice(0, limit);
+      truncated = true;
+    }
+    return { rows: out, format: "xlsx", totalRowCount: total, truncated };
   }
 
   const text = await readFile(path, "utf8");

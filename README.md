@@ -1,6 +1,6 @@
 # dataloupe
 
-**Turn any CSV, JSON, NDJSON, or Parquet file into one self-contained, fully-offline, interactive HTML explorer — with a single command.**
+**Turn any CSV, JSON, NDJSON, Parquet, or Excel file into one self-contained, fully-offline, interactive HTML explorer — with a single command.**
 
 ```bash
 npx dataloupe data.csv --open
@@ -24,7 +24,7 @@ Most "CSV to HTML" tools are websites that **upload your file to a server** — 
 non-starter for financial, health, internal, or otherwise sensitive data. The good
 local alternatives are heavier than the job:
 
-| | your data leaves your machine | needs a running server | shareable single file | reads Parquet |
+| | your data leaves your machine | needs a running server | shareable single file | reads Parquet & Excel |
 |---|:---:|:---:|:---:|:---:|
 | online CSV→HTML converters | **yes** ❌ | no | sometimes | rarely |
 | [Datasette](https://datasette.io/) | no | **yes** | no | via plugin |
@@ -57,14 +57,15 @@ Requires Node.js ≥ 18.
 dataloupe <file> [options]
 
 ARGUMENTS
-  <file>                CSV, TSV, JSON, NDJSON/JSONL, or Parquet file
+  <file>                CSV, TSV, JSON, NDJSON/JSONL, Parquet, or Excel (.xlsx)
 
 OPTIONS
   -o, --output <file>   output HTML path (default: <input>.html)
       --open            open the result in your browser when done
       --limit <n>       load at most n rows (default: all)
-      --format <fmt>    force format: csv|tsv|json|ndjson|parquet
+      --format <fmt>    force format: csv|tsv|json|ndjson|parquet|xlsx
       --delimiter <d>   field delimiter for csv/tsv (default: auto)
+      --sheet <name>    worksheet to read from an .xlsx file (default: first)
   -h, --help            show this help
   -v, --version         print version
 ```
@@ -74,13 +75,14 @@ Examples:
 ```bash
 npx dataloupe events.ndjson --open
 npx dataloupe metrics.parquet -o report.html
+npx dataloupe budget.xlsx --sheet Q3 --open
 npx dataloupe big.csv --limit 100000
 ```
 
 ## Features
 
 - **Truly offline output.** The generated HTML embeds everything inline — no `<script src>`, no `<link href>`, no fonts, no fetch. Verify it yourself: unplug the network and open the file.
-- **Every common format.** CSV, TSV, JSON (array of objects), NDJSON/JSONL, and **Parquet** (pure-JS reader, no native deps).
+- **Every common format.** CSV, TSV, JSON (array of objects), NDJSON/JSONL, **Parquet**, and **Excel (.xlsx)** — all with pure-JS readers, no native deps. Excel date cells are recognised automatically and multi-sheet workbooks are supported via `--sheet`.
 - **Automatic schema & type inference.** Integers, numbers, booleans, dates/datetimes, strings.
 - **Per-column statistics.** Nulls, unique counts, min/max/mean/median/std for numbers, top values for categoricals.
 - **Auto charts.** Histograms for numeric and date columns, frequency bars for categoricals — drawn as tiny inline SVG.

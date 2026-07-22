@@ -11,6 +11,7 @@ interface Args {
   limit?: number;
   format?: Format;
   delimiter?: string;
+  sheet?: string;
   help: boolean;
   version: boolean;
 }
@@ -44,11 +45,15 @@ function parseArgs(argv: string[]): Args {
       case "--delimiter":
         a.delimiter = argv[++i];
         break;
+      case "--sheet":
+        a.sheet = argv[++i];
+        break;
       default:
         if (arg.startsWith("--output=")) a.output = arg.slice(9);
         else if (arg.startsWith("--limit=")) a.limit = Number(arg.slice(8));
         else if (arg.startsWith("--format=")) a.format = arg.slice(9) as Format;
         else if (arg.startsWith("--delimiter=")) a.delimiter = arg.slice(12);
+        else if (arg.startsWith("--sheet=")) a.sheet = arg.slice(8);
         else if (!arg.startsWith("-") && !a.input) a.input = arg;
     }
   }
@@ -62,14 +67,15 @@ USAGE
   npx dataloupe data.csv --open
 
 ARGUMENTS
-  <file>                CSV, TSV, JSON, NDJSON/JSONL, or Parquet file
+  <file>                CSV, TSV, JSON, NDJSON/JSONL, Parquet, or Excel (.xlsx)
 
 OPTIONS
   -o, --output <file>   output HTML path (default: <input>.html)
       --open            open the result in your browser when done
       --limit <n>       load at most n rows (default: all)
-      --format <fmt>    force format: csv|tsv|json|ndjson|parquet
+      --format <fmt>    force format: csv|tsv|json|ndjson|parquet|xlsx
       --delimiter <d>   field delimiter for csv/tsv (default: auto)
+      --sheet <name>    worksheet to read from an .xlsx file (default: first)
   -h, --help            show this help
   -v, --version         print version
 
@@ -120,6 +126,7 @@ async function main() {
       format: args.format,
       limit: args.limit,
       delimiter: args.delimiter,
+      sheet: args.sheet,
     });
   } catch (err) {
     process.stderr.write(`dataloupe: failed to read ${basename(input)}: ${(err as Error).message}\n`);
