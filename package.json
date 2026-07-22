@@ -1,0 +1,33 @@
+{
+  "name": "dataloupe",
+  "version": "0.1.0",
+  "description": "Turn any CSV/JSON/NDJSON/Parquet file into a single, self-contained, fully-offline interactive HTML explorer. Nothing leaves your machine.",
+  "type": "module",
+  "bin": { "dataloupe": "dist/cli.js" },
+  "files": ["dist"],
+  "engines": { "node": ">=18" },
+  "scripts": {
+    "build:viewer": "node scripts/build-viewer.mjs",
+    "build:cli": "esbuild src/cli.ts --bundle --platform=node --format=esm --target=node18 --packages=external --outfile=dist/cli.js --banner:js=\"#!/usr/bin/env node\"",
+    "build": "npm run build:viewer && npm run build:cli",
+    "test": "vitest run",
+    "dev": "npm run build && node dist/cli.js"
+  },
+  "keywords": ["csv","parquet","json","ndjson","data","explorer","viewer","offline","html","table","cli","privacy","local-first"],
+  "author": "Aurelio Nakamura",
+  "homepage": "https://github.com/aurelio-nakamura/dataloupe",
+  "repository": { "type": "git", "url": "git+https://github.com/aurelio-nakamura/dataloupe.git" },
+  "bugs": { "url": "https://github.com/aurelio-nakamura/dataloupe/issues" },
+  "license": "MIT",
+  "dependencies": {
+    "hyparquet": "^1.8.0",
+    "papaparse": "^5.4.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "@types/papaparse": "^5.3.14",
+    "esbuild": "^0.24.0",
+    "typescript": "^5.6.0",
+    "vitest": "^2.1.0"
+  }
+}

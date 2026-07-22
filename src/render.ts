@@ -1,0 +1,59 @@
+import type { Dataset } from "./types.js";
+import { VIEWER_CSS, VIEWER_JS } from "./generated/viewer-assets.js";
+
+export const VERSION = "0.1.0";
+
+/** Build the single self-contained HTML document for a dataset. */
+export function renderHtml(ds: Dataset): string {
+  // Convert row objects -> arrays in column order (smaller payload, faster viewer).
+  const rows = ds.rows.map((r) => ds.columns.map((c) => normalize(r[c])));
+
+  const payload = {
+    columns: ds.columns,
+    types: ds.types,
+    rows,
+    stats: ds.stats,
+    rowCount: ds.rowCount,
+    totalRowCount: ds.totalRowCount,
+    truncated: ds.truncated,
+    source: ds.source,
+    format: ds.format,
+    generatedAt: new Date().toISOString(),
+    version: VERSION,
+  };
+
+  // JSON embedded in a script tag: escape "</" so a value can't close the tag.
+  const json = JSON.stringify(payload).replace(/<\//g, "<\\/");
+  const title = escapeHtml(basename(ds.source));
+
+  return `<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="generator" content="dataloupe ${VERSION}">
+<title>dataloupe · ${title}</title>
+<style>${VIEWER_CSS}</style>
+</head>
+<body>
+<script id="dataloupe-data" type="application/json">${json}</script>
+<script>window.__DATALOUPE__=JSON.parse(document.getElementById("dataloupe-data").textContent);</script>
+<script>${VIEWER_JS}</script>
+</body>
+</html>
+`;
+}
+
+function normalize(v: unknown): unknown {
+  if (v === undefined) return null;
+  if (typeof v === "bigint") return Number(v);
+  return v;
+}
+
+function basename(p: string): string {
+  return p.split(/[\\/]/).pop() || p;
+}
+
+function escapeHtml(s: string): string {
+  return s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c] as string));
+}
