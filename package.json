@@ -14,7 +14,7 @@
   },
   "scripts": {
     "build:viewer": "node scripts/build-viewer.mjs",
-    "build:cli": "esbuild src/cli.ts --bundle --platform=node --format=esm --target=node18 --packages=external --outfile=dist/cli.js --banner:js=\"#!/usr/bin/env node\"",
+    "build:cli": "esbuild src/cli.ts --bundle --platform=node --format=esm --target=node18 --packages=external --outfile=dist/cli.js --banner:js=\"#!/usr/bin/env node\" --define:__DATALOUPE_VERSION__=\\\"$npm_package_version\\\"",
     "build": "npm run build:viewer && npm run build:cli",
     "test": "vitest run",
     "dev": "npm run build && node dist/cli.js"

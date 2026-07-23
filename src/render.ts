@@ -1,7 +1,11 @@
 import type { Dataset } from "./types.js";
 import { VIEWER_CSS, VIEWER_JS } from "./generated/viewer-assets.js";
 
-export const VERSION = "0.1.0";
+// Injected at build time from package.json via esbuild --define (see build:cli).
+// Falls back for ts-node/vitest runs where the define isn't applied.
+declare const __DATALOUPE_VERSION__: string | undefined;
+export const VERSION =
+  typeof __DATALOUPE_VERSION__ !== "undefined" ? __DATALOUPE_VERSION__ : "0.0.0-dev";
 
 /** Build the single self-contained HTML document for a dataset. */
 export function renderHtml(ds: Dataset): string {
