@@ -81,6 +81,44 @@ npx dataloupe budget.xlsx --sheet Q3 --open
 npx dataloupe big.csv --limit 100000
 ```
 
+## Programmatic API
+
+dataloupe is also a library. Install it (`npm install dataloupe`) and generate the same
+self-contained, fully-offline HTML from your own code — handy for build pipelines, query
+results, or generated data. It ships TypeScript types and is ESM.
+
+```ts
+import { renderRows, renderFile, datasetFromRows, renderHtml } from "dataloupe";
+import { writeFileSync } from "node:fs";
+
+// From in-memory rows (array of plain objects):
+const html = renderRows(
+  [
+    { name: "Ada", born: 1815, field: "math" },
+    { name: "Alan", born: 1912, field: "cs" },
+  ],
+  { source: "pioneers" },
+);
+writeFileSync("report.html", html);
+
+// From a file (CSV/TSV/JSON/NDJSON/Parquet/XLSX):
+writeFileSync("data.html", await renderFile("data.csv"));
+
+// Or build the dataset (schema + stats) and render separately:
+const ds = datasetFromRows(rows);
+console.log(ds.columns, ds.types, ds.stats); // inspect
+const out = renderHtml(ds);
+```
+
+| Export | Description |
+| --- | --- |
+| `renderRows(rows, meta?)` | In-memory rows → self-contained HTML string. |
+| `renderFile(path, opts?)` | Read a file → self-contained HTML string. |
+| `buildDataset(path, opts?)` | Read a file → analyzed `Dataset` (schema + stats). |
+| `datasetFromRows(rows, meta?)` | In-memory rows → analyzed `Dataset`. |
+| `renderHtml(dataset)` | `Dataset` → self-contained HTML string. |
+| `VERSION` | The dataloupe version string. |
+
 ## Features
 
 - **Truly offline output.** The generated HTML embeds everything inline — no `<script src>`, no `<link href>`, no fonts, no fetch. Verify it yourself: unplug the network and open the file.

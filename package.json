@@ -1,13 +1,16 @@
 {
   "name": "dataloupe",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Turn any CSV/TSV/JSON/NDJSON/Parquet/Excel file into a single, self-contained, fully-offline interactive HTML explorer. Nothing leaves your machine.",
   "type": "module",
   "bin": {
     "dataloupe": "dist/cli.js"
   },
   "files": [
-    "dist/cli.js"
+    "dist/cli.js",
+    "dist/index.js",
+    "dist/*.d.ts",
+    "dist/generated/*.d.ts"
   ],
   "engines": {
     "node": ">=18"
@@ -15,9 +18,11 @@
   "scripts": {
     "build:viewer": "node scripts/build-viewer.mjs",
     "build:cli": "esbuild src/cli.ts --bundle --platform=node --format=esm --target=node18 --packages=external --outfile=dist/cli.js --banner:js=\"#!/usr/bin/env node\" --define:__DATALOUPE_VERSION__=\\\"$npm_package_version\\\"",
-    "build": "npm run build:viewer && npm run build:cli",
+    "build": "npm run build:viewer && npm run build:cli && npm run build:lib && npm run build:types",
     "test": "vitest run",
-    "dev": "npm run build && node dist/cli.js"
+    "dev": "npm run build && node dist/cli.js",
+    "build:lib": "esbuild src/index.ts --bundle --platform=node --format=esm --target=node18 --packages=external --outfile=dist/index.js --define:__DATALOUPE_VERSION__=\\\"$npm_package_version\\\"",
+    "build:types": "tsc -p tsconfig.build.json"
   },
   "keywords": [
     "csv",
@@ -34,7 +39,11 @@
     "table",
     "cli",
     "privacy",
-    "local-first"
+    "local-first",
+    "library",
+    "api",
+    "report",
+    "dataframe"
   ],
   "author": "Aurelio Nakamura",
   "homepage": "https://github.com/aurelio-nakamura/dataloupe",
@@ -57,5 +66,15 @@
     "esbuild": "^0.24.0",
     "typescript": "^5.6.0",
     "vitest": "^2.1.0"
+  },
+  "main": "dist/index.js",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
   }
 }

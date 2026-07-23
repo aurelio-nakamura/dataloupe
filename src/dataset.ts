@@ -4,9 +4,23 @@ import { parseFile, type ParseOptions } from "./parse.js";
 
 const TYPE_SAMPLE = 5000;
 
-export async function buildDataset(path: string, opts: ParseOptions = {}): Promise<Dataset> {
-  const { rows, format, totalRowCount, truncated } = await parseFile(path, opts);
+export interface DatasetMeta {
+  /** Format label shown in the UI (e.g. "csv", "json", "memory"). */
+  format?: string;
+  /** Source label shown in the UI (e.g. a file path or dataset name). */
+  source?: string;
+  /** True if `rows` is a truncated view of a larger source. */
+  truncated?: boolean;
+  /** Total row count in the source if larger than the loaded rows. */
+  totalRowCount?: number;
+}
 
+/**
+ * Build a fully-analyzed {@link Dataset} from in-memory rows (an array of plain
+ * objects). This is the core used by {@link buildDataset}; call it directly when
+ * your data already lives in memory (query results, generated data, etc.).
+ */
+export function datasetFromRows(rows: Row[], meta: DatasetMeta = {}): Dataset {
   // Collect column order (union, preserving first-seen order)
   const columns: string[] = [];
   const seen = new Set<string>();
@@ -48,9 +62,16 @@ export async function buildDataset(path: string, opts: ParseOptions = {}): Promi
     rows: typed,
     stats,
     rowCount: typed.length,
-    totalRowCount: totalRowCount && totalRowCount > typed.length ? totalRowCount : undefined,
-    truncated,
-    source: path,
-    format,
+    totalRowCount:
+      meta.totalRowCount && meta.totalRowCount > typed.length ? meta.totalRowCount : undefined,
+    truncated: meta.truncated ?? false,
+    source: meta.source ?? "memory",
+    format: meta.format ?? "memory",
   };
 }
+
+export async function buildDataset(path: string, opts: ParseOptions = {}): Promise<Dataset> {
+  const { rows, format, totalRowCount, truncated } = await parseFile(path, opts);
+  return datasetFromRows(rows, { format, source: path, totalRowCount, truncated });
+}
+

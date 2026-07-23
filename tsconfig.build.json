@@ -1,0 +1,9 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "declaration": true,
+    "emitDeclarationOnly": true,
+    "outDir": "dist"
+  },
+  "include": ["src/index.ts", "src/render.ts", "src/dataset.ts", "src/parse.ts", "src/analyze.ts", "src/types.ts", "src/xlsx.ts"]
+}
