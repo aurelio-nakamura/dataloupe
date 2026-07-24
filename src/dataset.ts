@@ -1,6 +1,6 @@
 import { analyzeColumn, coerce, inferType } from "./analyze.js";
 import type { ColType, Dataset, Row } from "./types.js";
-import { parseFile, type ParseOptions } from "./parse.js";
+import { parseFile, parseText, type Format, type ParseOptions } from "./parse.js";
 
 const TYPE_SAMPLE = 5000;
 
@@ -73,5 +73,19 @@ export function datasetFromRows(rows: Row[], meta: DatasetMeta = {}): Dataset {
 export async function buildDataset(path: string, opts: ParseOptions = {}): Promise<Dataset> {
   const { rows, format, totalRowCount, truncated } = await parseFile(path, opts);
   return datasetFromRows(rows, { format, source: path, totalRowCount, truncated });
+}
+
+/**
+ * Build a {@link Dataset} from a text string in a text-based format
+ * (csv/tsv/json/ndjson). Used for piped stdin input.
+ */
+export function buildDatasetFromText(
+  text: string,
+  format: Format,
+  opts: ParseOptions = {},
+  source = "stdin",
+): Dataset {
+  const { rows, format: fmt, totalRowCount, truncated } = parseText(text, format, opts);
+  return datasetFromRows(rows, { format: fmt, source, totalRowCount, truncated });
 }
 

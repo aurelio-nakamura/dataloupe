@@ -60,9 +60,10 @@ dataloupe <file> [options]
 
 ARGUMENTS
   <file>                CSV, TSV, JSON, NDJSON/JSONL, Parquet, or Excel (.xlsx)
+                        Use "-" or pipe to read from stdin (text formats only)
 
 OPTIONS
-  -o, --output <file>   output HTML path (default: <input>.html)
+  -o, --output <file>   output HTML path (default: <input>.html, or dataloupe.html for stdin)
       --open            open the result in your browser when done
       --limit <n>       load at most n rows (default: all)
       --format <fmt>    force format: csv|tsv|json|ndjson|parquet|xlsx
@@ -79,6 +80,15 @@ npx dataloupe events.ndjson --open
 npx dataloupe metrics.parquet -o report.html
 npx dataloupe budget.xlsx --sheet Q3 --open
 npx dataloupe big.csv --limit 100000
+```
+
+It also reads **stdin**, so it drops straight into a shell pipeline (format is
+auto-detected, or force it with `--format`):
+
+```bash
+psql -c "copy (select * from orders) to stdout csv header" | npx dataloupe - --open
+cat data.csv | npx dataloupe -o report.html
+curl -s https://api.example.com/items | npx dataloupe --format json --open
 ```
 
 ## Programmatic API
@@ -114,8 +124,10 @@ const out = renderHtml(ds);
 | --- | --- |
 | `renderRows(rows, meta?)` | In-memory rows → self-contained HTML string. |
 | `renderFile(path, opts?)` | Read a file → self-contained HTML string. |
+| `renderText(text, format, opts?)` | Text (csv/tsv/json/ndjson) → self-contained HTML string. |
 | `buildDataset(path, opts?)` | Read a file → analyzed `Dataset` (schema + stats). |
 | `datasetFromRows(rows, meta?)` | In-memory rows → analyzed `Dataset`. |
+| `buildDatasetFromText(text, format, opts?)` | Text string → analyzed `Dataset`. |
 | `renderHtml(dataset)` | `Dataset` → self-contained HTML string. |
 | `VERSION` | The dataloupe version string. |
 

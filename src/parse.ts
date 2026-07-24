@@ -67,6 +67,16 @@ export async function parseFile(path: string, opts: ParseOptions = {}): Promise<
   }
 
   const text = await readFile(path, "utf8");
+  return parseText(text, format, opts);
+}
+
+/**
+ * Parse already-in-memory text for a text-based format (csv/tsv/json/ndjson).
+ * Used for both file reads and streamed stdin. Binary formats (parquet/xlsx)
+ * are not supported here — read those from a file path.
+ */
+export function parseText(text: string, format: Format, opts: ParseOptions = {}): ParseResult {
+  const limit = opts.limit ?? Infinity;
   switch (format) {
     case "csv":
     case "tsv":
@@ -75,6 +85,9 @@ export async function parseFile(path: string, opts: ParseOptions = {}): Promise<
       return parseNdjson(text, limit);
     case "json":
       return parseJson(text, limit);
+    case "parquet":
+    case "xlsx":
+      throw new Error(`${format} cannot be read from stdin; pass a file path instead`);
     default:
       return parseDelimited(text, "csv", limit);
   }

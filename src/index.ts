@@ -25,9 +25,14 @@
  *
  * @module
  */
-import { buildDataset, datasetFromRows, type DatasetMeta } from "./dataset.js";
+import {
+  buildDataset,
+  buildDatasetFromText,
+  datasetFromRows,
+  type DatasetMeta,
+} from "./dataset.js";
 import { renderHtml } from "./render.js";
-import type { ParseOptions } from "./parse.js";
+import type { Format, ParseOptions } from "./parse.js";
 import type { Dataset, Row } from "./types.js";
 
 /**
@@ -40,6 +45,12 @@ export { buildDataset };
  * Build an analyzed {@link Dataset} from in-memory rows (array of plain objects).
  */
 export { datasetFromRows };
+
+/**
+ * Build an analyzed {@link Dataset} from a text string in a text-based format
+ * (csv/tsv/json/ndjson) — e.g. piped/streamed content.
+ */
+export { buildDatasetFromText };
 
 /** Render an already-built {@link Dataset} to a self-contained HTML string. */
 export { renderHtml };
@@ -61,6 +72,14 @@ export async function renderFile(path: string, opts: ParseOptions = {}): Promise
  */
 export function renderRows(rows: Row[], meta: DatasetMeta = {}): string {
   return renderHtml(datasetFromRows(rows, meta));
+}
+
+/**
+ * Convenience: turn a text string (csv/tsv/json/ndjson) into the self-contained
+ * HTML string. Equivalent to `renderHtml(buildDatasetFromText(text, format, opts))`.
+ */
+export function renderText(text: string, format: Format, opts: ParseOptions = {}): string {
+  return renderHtml(buildDatasetFromText(text, format, opts));
 }
 
 export type { Dataset, Row, ColType, ColumnStats } from "./types.js";
