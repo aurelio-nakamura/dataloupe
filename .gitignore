@@ -5,3 +5,6 @@ dist/
 /tmp/
 PLAN.md
 *.tgz
+
+# default CLI output file (avoid accidental commits when run in-repo)
+/dataloupe.html
