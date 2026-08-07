@@ -22,7 +22,8 @@
     "test": "vitest run",
     "dev": "npm run build && node dist/cli.js",
     "build:lib": "esbuild src/index.ts --bundle --platform=node --format=esm --target=node18 --packages=external --outfile=dist/index.js --define:__DATALOUPE_VERSION__=\\\"$npm_package_version\\\"",
-    "build:types": "tsc -p tsconfig.build.json"
+    "build:types": "tsc -p tsconfig.build.json",
+    "prepare": "npm run build"
   },
   "keywords": [
     "csv",
