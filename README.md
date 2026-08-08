@@ -55,6 +55,14 @@ dataloupe sales.csv --open
 
 Requires Node.js ≥ 18.
 
+> **Available right now, straight from source** (the npm package is being published shortly):
+>
+> ```bash
+> npx github:aurelio-nakamura/dataloupe sales.csv
+> ```
+>
+> This clones and builds the package on the fly — same result, no npm registry needed.
+
 ## Usage
 
 ```
