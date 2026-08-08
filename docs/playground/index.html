@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>dataloupe · playground — explore your data in the browser</title>
+<meta name="description" content="Drop a CSV/TSV/JSON/NDJSON/Parquet/XLSX file and get an interactive data explorer. Runs 100% in your browser — nothing is uploaded.">
+<style>
+  :root{
+    --bg:#0f1117; --panel:#171a23; --border:#262b36; --fg:#e6e9ef; --muted:#9aa4b2;
+    --accent:#5b9dff; --accent2:#7c5cff; --ok:#3fb950;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{background:var(--bg);color:var(--fg);font:15px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+  a{color:var(--accent)}
+  .wrap{max-width:920px;margin:0 auto;padding:32px 20px 64px}
+  header h1{font-size:30px;margin:0 0 4px;letter-spacing:-.5px}
+  header h1 .lo{color:var(--accent)}
+  .tag{color:var(--muted);margin:0 0 18px}
+  .disc{font-size:12.5px;color:var(--muted);background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:8px 12px;margin:0 0 22px}
+  #drop{
+    border:2px dashed var(--border);border-radius:14px;background:var(--panel);
+    padding:46px 24px;text-align:center;transition:.15s border-color,.15s background;cursor:pointer;
+  }
+  #drop.hot{border-color:var(--accent);background:#191d2b}
+  #drop .big{font-size:19px;font-weight:600;margin:0 0 6px}
+  #drop .sub{color:var(--muted);font-size:13.5px;margin:0}
+  #drop .fmts{margin-top:14px;font-size:12px;color:var(--muted)}
+  .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:center;margin-top:16px}
+  button{
+    font:inherit;font-weight:600;color:#fff;background:linear-gradient(180deg,var(--accent),var(--accent2));
+    border:0;border-radius:9px;padding:9px 16px;cursor:pointer
+  }
+  button.ghost{background:transparent;border:1px solid var(--border);color:var(--fg);font-weight:500}
+  .privacy{display:flex;align-items:center;gap:8px;justify-content:center;color:var(--muted);font-size:12.5px;margin-top:14px}
+  .privacy b{color:var(--ok);font-weight:600}
+  #err{color:#ff6b6b;text-align:center;margin-top:14px;min-height:1em}
+  .result{margin-top:22px;display:none}
+  .result.show{display:block}
+  .bar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:10px}
+  .bar .name{font-weight:600}
+  .bar .meta{color:var(--muted);font-size:12.5px}
+  iframe{width:100%;height:74vh;min-height:520px;border:1px solid var(--border);border-radius:12px;background:#fff}
+  .cli{margin-top:34px;border-top:1px solid var(--border);padding-top:22px;color:var(--muted);font-size:13.5px}
+  code,kbd{background:#11141c;border:1px solid var(--border);border-radius:6px;padding:2px 6px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12.5px;color:#dce3ee}
+  .footer{margin-top:30px;color:var(--muted);font-size:12px;text-align:center}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1><span class="lo">data</span>loupe · playground</h1>
+    <p class="tag">Drop a data file → get a beautiful interactive explorer. No install, no upload.</p>
+  </header>
+
+  <p class="disc">🤖 dataloupe is built and maintained by an AI agent (Aurelio Nakamura). This page runs the exact same engine as the CLI, entirely in your browser.</p>
+
+  <div id="drop" tabindex="0" role="button" aria-label="Drop a data file or click to choose">
+    <p class="big">Drop a file here, or click to choose</p>
+    <p class="sub">CSV · TSV · JSON · NDJSON · Parquet · XLSX &nbsp;—&nbsp; up to a few hundred MB (your machine's the limit)</p>
+    <div class="row">
+      <button id="pick" type="button">Choose file…</button>
+      <button id="sample" class="ghost" type="button">Try a sample dataset</button>
+    </div>
+    <div class="fmts" id="ver"></div>
+  </div>
+  <div class="privacy">🔒 <span><b>100% local.</b> Your data never leaves this browser tab — no server, no telemetry.</span></div>
+  <div id="err"></div>
+
+  <input id="file" type="file" accept=".csv,.tsv,.tab,.json,.ndjson,.jsonl,.parquet,.pq,.xlsx,.xlsm" hidden>
+
+  <section class="result" id="result">
+    <div class="bar">
+      <span class="name" id="rname"></span>
+      <span class="meta" id="rmeta"></span>
+      <span style="flex:1"></span>
+      <button id="download" class="ghost" type="button">⬇ Download .html</button>
+      <button id="newtab" class="ghost" type="button">↗ Open in new tab</button>
+    </div>
+    <iframe id="frame" title="dataloupe explorer" sandbox="allow-scripts allow-popups allow-downloads"></iframe>
+  </section>
+
+  <div class="cli">
+    <p style="margin:0 0 8px;color:var(--fg);font-weight:600">Prefer the terminal? Same result, one command:</p>
+    <p style="margin:0 0 6px"><code>npx dataloupe data.csv</code> &nbsp;→&nbsp; writes a self-contained <code>.html</code> you can email, commit, or double-click. Works fully offline, forever.</p>
+    <p style="margin:0">Reads CSV/TSV/JSON/NDJSON/Parquet/XLSX · pipe with <code>cat data.csv | npx dataloupe -</code> · also a programmatic library.</p>
+  </div>
+
+  <div class="footer">
+    <a href="https://github.com/aurelio-nakamura/dataloupe">GitHub</a> · MIT ·
+    generated HTML makes zero external requests
+  </div>
+</div>
+
+<script type="module">
+import { detectFormat, isBinaryFormat, renderText, renderXlsx, renderParquet, VERSION }
+  from "./dataloupe.browser.js";
+
+const $ = (id) => document.getElementById(id);
+const drop = $("drop"), fileInput = $("file"), err = $("err"), result = $("result");
+const frame = $("frame");
+$("ver").textContent = "engine v" + VERSION + " · runs in your browser";
+
+let lastHtml = "", lastName = "";
+const MAX_ROWS = 200000;
+
+function setError(m){ err.textContent = m || ""; }
+
+async function handleFile(file){
+  setError("");
+  if(!file) return;
+  const name = file.name || "data";
+  const fmt = detectFormat(name);
+  try{
+    let html;
+    const t0 = performance.now();
+    if(fmt === "parquet"){
+      html = await renderParquet(await file.arrayBuffer(), name, MAX_ROWS);
+    } else if(fmt === "xlsx"){
+      html = renderXlsx(new Uint8Array(await file.arrayBuffer()), name, MAX_ROWS);
+    } else {
+      html = renderText(await file.text(), fmt, name, MAX_ROWS);
+    }
+    const ms = Math.round(performance.now() - t0);
+    show(html, name, fmt, file.size, ms);
+  }catch(e){
+    console.error(e);
+    setError("Couldn't parse " + name + ": " + (e && e.message ? e.message : e));
+  }
+}
+
+function show(html, name, fmt, size, ms){
+  lastHtml = html; lastName = name;
+  frame.srcdoc = html;
+  $("rname").textContent = name;
+  $("rmeta").textContent = fmt.toUpperCase() + " · " + fmtBytes(size) + " · rendered in " + ms + " ms";
+  result.classList.add("show");
+  result.scrollIntoView({behavior:"smooth", block:"start"});
+}
+
+function fmtBytes(n){
+  if(!n && n!==0) return "";
+  const u=["B","KB","MB","GB"]; let i=0; while(n>=1024 && i<u.length-1){n/=1024;i++;}
+  return n.toFixed(n<10&&i>0?1:0)+" "+u[i];
+}
+
+// download / new tab
+$("download").addEventListener("click", ()=>{
+  if(!lastHtml) return;
+  const blob = new Blob([lastHtml], {type:"text/html"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = (lastName.replace(/\.[^.]+$/,"") || "dataloupe") + ".html";
+  a.click(); setTimeout(()=>URL.revokeObjectURL(a.href), 4000);
+});
+$("newtab").addEventListener("click", ()=>{
+  if(!lastHtml) return;
+  const blob = new Blob([lastHtml], {type:"text/html"});
+  window.open(URL.createObjectURL(blob), "_blank");
+});
+
+// pickers
+$("pick").addEventListener("click", (e)=>{ e.stopPropagation(); fileInput.click(); });
+drop.addEventListener("click", ()=> fileInput.click());
+drop.addEventListener("keydown", (e)=>{ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); fileInput.click(); }});
+fileInput.addEventListener("change", ()=>{ if(fileInput.files[0]) handleFile(fileInput.files[0]); });
+
+// drag & drop
+["dragenter","dragover"].forEach(ev=> drop.addEventListener(ev, (e)=>{ e.preventDefault(); drop.classList.add("hot"); }));
+["dragleave","drop"].forEach(ev=> drop.addEventListener(ev, (e)=>{ e.preventDefault(); if(ev!=="drop"||e.target===drop) drop.classList.remove("hot"); }));
+drop.addEventListener("drop", (e)=>{ const f = e.dataTransfer && e.dataTransfer.files[0]; if(f) handleFile(f); });
+window.addEventListener("dragover", e=>e.preventDefault());
+window.addEventListener("drop", e=>e.preventDefault());
+
+// sample dataset (generated in-memory; no network)
+$("sample").addEventListener("click", (e)=>{
+  e.stopPropagation();
+  const species=["Adelie","Gentoo","Chinstrap"], islands=["Torgersen","Biscoe","Dream"];
+  let csv="species,island,bill_length_mm,bill_depth_mm,flipper_length_mm,body_mass_g,sex,year\n";
+  let seed=42; const rnd=()=>{ seed=(seed*1103515245+12345)&0x7fffffff; return seed/0x7fffffff; };
+  for(let i=0;i<300;i++){
+    const sp=species[Math.floor(rnd()*3)], is=islands[Math.floor(rnd()*3)];
+    const bl=(32+rnd()*28).toFixed(1), bd=(13+rnd()*9).toFixed(1);
+    const fl=Math.round(170+rnd()*60), bm=Math.round(2700+rnd()*3300);
+    const sex=rnd()<0.5?"male":"female", yr=2007+Math.floor(rnd()*3);
+    csv+=`${sp},${is},${bl},${bd},${fl},${bm},${sex},${yr}\n`;
+  }
+  handleFile(new File([csv], "penguins-sample.csv", {type:"text/csv"}));
+});
+</script>
+</body>
+</html>

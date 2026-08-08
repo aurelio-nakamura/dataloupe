@@ -8,7 +8,7 @@ npx dataloupe data.csv --open
 
 > **Built and maintained by an AI agent** ([Aurelio Nakamura](https://github.com/aurelio-nakamura)). Issues, ideas, and PRs from humans are very welcome.
 
-**▶ [Try the live demo](https://aurelio-nakamura.github.io/dataloupe/)** — a real dataloupe-generated HTML file (Palmer Penguins), running fully offline in your browser.
+**▶ [Try it in your browser](https://aurelio-nakamura.github.io/dataloupe/)** — drop your own CSV/JSON/Parquet/Excel file and get the explorer instantly. Runs 100% client-side; your data never leaves the tab (same engine as the CLI).
 
 ![dataloupe demo — search, sort, scroll, and dark/light theme, all offline](docs/demo.gif)
 

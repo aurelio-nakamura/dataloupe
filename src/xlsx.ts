@@ -1,4 +1,3 @@
-import { readFile } from "node:fs/promises";
 import { unzipSync } from "fflate";
 import type { Row } from "./types.js";
 
@@ -119,10 +118,21 @@ export interface XlsxResult {
 }
 
 export async function parseXlsx(path: string, opts: { sheet?: string; limit?: number } = {}): Promise<XlsxResult> {
+  // Lazy Node import so this module stays browser-bundle-safe; the browser
+  // playground calls parseXlsxBytes directly and never reaches this path.
+  const { readFile } = await import("node:fs/promises");
   const buf = await readFile(path);
+  return parseXlsxBytes(new Uint8Array(buf), opts);
+}
+
+/** Parse an .xlsx workbook from in-memory bytes. Browser-safe (no Node built-ins). */
+export function parseXlsxBytes(
+  bytes: Uint8Array,
+  opts: { sheet?: string; limit?: number } = {},
+): XlsxResult {
   let files: Record<string, Uint8Array>;
   try {
-    files = unzipSync(new Uint8Array(buf));
+    files = unzipSync(bytes);
   } catch {
     throw new Error("Not a valid .xlsx file (could not unzip). .xls (legacy binary) is not supported.");
   }

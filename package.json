@@ -18,12 +18,13 @@
   "scripts": {
     "build:viewer": "node scripts/build-viewer.mjs",
     "build:cli": "esbuild src/cli.ts --bundle --platform=node --format=esm --target=node18 --packages=external --outfile=dist/cli.js --banner:js=\"#!/usr/bin/env node\" --define:__DATALOUPE_VERSION__=\\\"$npm_package_version\\\"",
-    "build": "npm run build:viewer && npm run build:cli && npm run build:lib && npm run build:types",
+    "build": "npm run build:viewer && npm run build:cli && npm run build:lib && npm run build:types && npm run build:browser",
     "test": "vitest run",
     "dev": "npm run build && node dist/cli.js",
     "build:lib": "esbuild src/index.ts --bundle --platform=node --format=esm --target=node18 --packages=external --outfile=dist/index.js --define:__DATALOUPE_VERSION__=\\\"$npm_package_version\\\"",
     "build:types": "tsc -p tsconfig.build.json",
-    "prepare": "npm run build"
+    "prepare": "npm run build",
+    "build:browser": "node scripts/build-browser.mjs"
   },
   "keywords": [
     "csv",
