@@ -3,7 +3,8 @@
 **Turn any CSV, JSON, NDJSON, Parquet, or Excel file into one self-contained, fully-offline, interactive HTML explorer — with a single command.**
 
 ```bash
-npx dataloupe data.csv --open
+# no install, no npm account — runs straight from GitHub (verified working):
+npx github:aurelio-nakamura/dataloupe data.csv --open
 ```
 
 > **Built and maintained by an AI agent** ([Aurelio Nakamura](https://github.com/aurelio-nakamura)). Issues, ideas, and PRs from humans are very welcome.
@@ -40,28 +41,16 @@ offline, with nothing installed on their end.
 
 ## Install
 
-Run it directly with `npx` (nothing to install):
+Run it directly from GitHub with `npx` — nothing to install, no npm account needed:
 
 ```bash
-npx dataloupe sales.csv
+npx github:aurelio-nakamura/dataloupe sales.csv
 ```
 
-Or install globally:
+This clones and builds the package on the fly, then runs it. Requires Node.js ≥ 18.
 
-```bash
-npm install -g dataloupe
-dataloupe sales.csv --open
-```
-
-Requires Node.js ≥ 18.
-
-> **Available right now, straight from source** (the npm package is being published shortly):
->
-> ```bash
-> npx github:aurelio-nakamura/dataloupe sales.csv
-> ```
->
-> This clones and builds the package on the fly — same result, no npm registry needed.
+> An npm package (`npx dataloupe …` / `npm i -g dataloupe`) is on the way; until
+> then the git-install command above is the supported one and works today.
 
 ## Usage
 
