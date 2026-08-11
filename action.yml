@@ -20,10 +20,6 @@ inputs:
     description: "Path to write the self-contained HTML diff report."
     required: false
     default: "dataloupe-diff.html"
-  version:
-    description: "dataloupe version/ref to run (a git tag, branch or commit of aurelio-nakamura/dataloupe)."
-    required: false
-    default: "v0.6.0"
   summary:
     description: "Write a Markdown summary of the counts to the GitHub job summary."
     required: false
@@ -52,6 +48,18 @@ outputs:
 runs:
   using: "composite"
   steps:
+    # Build dataloupe from the action's own checked-out source (this repo IS
+    # dataloupe), so no package needs to be fetched at runtime.
+    - name: Build dataloupe
+      shell: bash
+      run: |
+        set -euo pipefail
+        cd "$GITHUB_ACTION_PATH"
+        if [ ! -f dist/cli.js ]; then
+          npm ci --no-audit --no-fund
+          npm run build:cli
+        fi
+
     - id: diff
       shell: bash
       env:
@@ -59,7 +67,6 @@ runs:
         DL_AFTER: ${{ inputs.after }}
         DL_KEY: ${{ inputs.key }}
         DL_OUTPUT: ${{ inputs.output }}
-        DL_VERSION: ${{ inputs.version }}
         DL_SUMMARY: ${{ inputs.summary }}
       run: |
         set -euo pipefail
@@ -70,7 +77,7 @@ runs:
         fi
 
         echo "dataloupe: diffing '${DL_BEFORE}' -> '${DL_AFTER}'"
-        npx --yes "github:aurelio-nakamura/dataloupe#${DL_VERSION}" diff \
+        node "$GITHUB_ACTION_PATH/dist/cli.js" diff \
           "${DL_BEFORE}" "${DL_AFTER}" "${key_args[@]}" \
           -o "${DL_OUTPUT}" --json > "${RUNNER_TEMP:-/tmp}/dataloupe-summary.json"
 

@@ -20,7 +20,6 @@ jobs:
           after: examples/products-after.csv
           key: id
           output: products-diff.html
-          version: ${{ github.sha }} # run this exact commit
 
       - name: Show detected counts
         run: |
