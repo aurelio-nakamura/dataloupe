@@ -96,6 +96,8 @@ curl -s https://api.example.com/items | npx dataloupe --format json --open
 real change all look the same. `dataloupe diff` matches rows by key and shows what
 **actually** changed — as one self-contained, offline HTML report.
 
+**▶ [See a live diff report](https://aurelio-nakamura.github.io/dataloupe/demo/diff.html)** — a real `dataloupe diff` output (added/removed/changed rows with cell-level `old → new` highlights), rendered fully offline.
+
 ```bash
 npx github:aurelio-nakamura/dataloupe diff old.csv new.csv --key id --open
 ```

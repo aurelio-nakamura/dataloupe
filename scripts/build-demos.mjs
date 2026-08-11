@@ -20,4 +20,21 @@ for (const j of jobs) {
     stdio: "inherit",
   });
 }
+
+// diff showcase: a real `dataloupe diff` report between two product snapshots.
+execFileSync(
+  "node",
+  [
+    cli,
+    "diff",
+    join(root, "examples/products-before.csv"),
+    join(root, "examples/products-after.csv"),
+    "--key",
+    "id",
+    "-o",
+    join(root, "docs/demo/diff.html"),
+  ],
+  { stdio: "inherit" },
+);
+
 console.log("demos written to docs/demo/");
