@@ -2,6 +2,8 @@ import { writeFile } from "node:fs/promises";
 import { basename, extname, resolve } from "node:path";
 import { buildDataset, buildDatasetFromText } from "./dataset.js";
 import { renderHtml, VERSION } from "./render.js";
+import { diffDatasets } from "./diff-core.js";
+import { renderDiffHtml } from "./diff-render.js";
 import type { Format } from "./parse.js";
 
 interface Args {
@@ -67,6 +69,7 @@ const HELP = `dataloupe ${VERSION} — turn a data file into one self-contained,
 
 USAGE
   dataloupe <file> [options]
+  dataloupe diff <before> <after> [--key col]   (a git-diff for data files)
   npx dataloupe data.csv --open
 
 ARGUMENTS
@@ -128,7 +131,98 @@ function sniffTextFormat(text: string): Format {
   return "csv";
 }
 
+interface DiffArgs {
+  before?: string;
+  after?: string;
+  output?: string;
+  key?: string;
+  open: boolean;
+}
+
+function parseDiffArgs(argv: string[]): DiffArgs {
+  const a: DiffArgs = { open: false };
+  for (let i = 0; i < argv.length; i++) {
+    const arg = argv[i];
+    if (arg === "-o" || arg === "--output") a.output = argv[++i];
+    else if (arg.startsWith("--output=")) a.output = arg.slice(9);
+    else if (arg === "-k" || arg === "--key") a.key = argv[++i];
+    else if (arg.startsWith("--key=")) a.key = arg.slice(6);
+    else if (arg === "--open") a.open = true;
+    else if (!arg.startsWith("-")) {
+      if (!a.before) a.before = arg;
+      else if (!a.after) a.after = arg;
+    }
+  }
+  return a;
+}
+
+const DIFF_HELP = `dataloupe diff — a git-diff for data files, as one offline HTML report
+
+USAGE
+  dataloupe diff <before> <after> [options]
+  npx dataloupe diff old.csv new.csv --key id --open
+
+ARGUMENTS
+  <before> <after>      two data files (CSV/TSV/JSON/NDJSON/Parquet/xlsx)
+
+OPTIONS
+  -k, --key <col[,col]> column(s) that identify a row → enables per-cell changes
+                        (auto-detected from a unique id-like column when omitted)
+  -o, --output <file>   output HTML path (default: <after>.diff.html)
+      --open            open the result in your browser when done
+
+Emits a single self-contained .html: added / removed / changed rows with the
+exact cells that changed highlighted. No external requests; data never leaves
+your machine. Built and maintained by an AI agent (Aurelio Nakamura).`;
+
+async function runDiff(argv: string[]): Promise<void> {
+  if (argv.includes("-h") || argv.includes("--help")) {
+    process.stdout.write(DIFF_HELP + "\n");
+    return;
+  }
+  const a = parseDiffArgs(argv);
+  if (!a.before || !a.after) {
+    process.stderr.write("dataloupe diff: need two files: dataloupe diff <before> <after>\n");
+    process.exit(1);
+  }
+  const before = resolve(a.before);
+  const after = resolve(a.after);
+  const ext = extname(after);
+  const defaultOut = (ext ? after.slice(0, -ext.length) : after) + ".diff.html";
+  const output = a.output ? resolve(a.output) : defaultOut;
+
+  const t0 = Date.now();
+  let bDs, aDs;
+  try {
+    [bDs, aDs] = await Promise.all([buildDataset(before), buildDataset(after)]);
+  } catch (err) {
+    process.stderr.write(`dataloupe diff: ${(err as Error).message}\n`);
+    process.exit(1);
+  }
+  const key = a.key ? a.key.split(",").map((s) => s.trim()).filter(Boolean) : undefined;
+  const result = diffDatasets(bDs, aDs, { key });
+  const html = renderDiffHtml(result);
+  await writeFile(output, html, "utf8");
+
+  const ms = Date.now() - t0;
+  const size = Buffer.byteLength(html, "utf8");
+  const c = result.counts;
+  const keyNote = result.keyColumns.length
+    ? `key: ${result.keyColumns.join(",")}${result.keyAuto ? " (auto)" : ""}`
+    : "whole-row match (no key)";
+  process.stdout.write(
+    `dataloupe diff → ${output}\n` +
+      `  +${c.added} added · \u2212${c.removed} removed · ~${c.changed} changed · =${c.unchanged} unchanged\n` +
+      `  ${keyNote} · ${fmtBytes(size)} · ${ms} ms\n`,
+  );
+  if (a.open) await openInBrowser(output);
+}
+
 async function main() {
+  if (process.argv[2] === "diff") {
+    await runDiff(process.argv.slice(3));
+    return;
+  }
   const args = parseArgs(process.argv.slice(2));
   if (args.version) {
     process.stdout.write(VERSION + "\n");

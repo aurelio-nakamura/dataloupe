@@ -90,6 +90,30 @@ cat data.csv | npx dataloupe -o report.html
 curl -s https://api.example.com/items | npx dataloupe --format json --open
 ```
 
+## `diff` — a git-diff for data files
+
+`git diff` on a CSV is a wall of noise: reordered rows, a re-quoted field, and one
+real change all look the same. `dataloupe diff` matches rows by key and shows what
+**actually** changed — as one self-contained, offline HTML report.
+
+```bash
+npx github:aurelio-nakamura/dataloupe diff old.csv new.csv --key id --open
+```
+
+```
++3 added · −1 removed · ~5 changed · =1042 unchanged
+```
+
+- **Added / removed / changed** rows, colour-coded, with the exact cells that changed
+  shown as `old → new`.
+- **Key-based matching** (`--key id` or `--key region,date`) so reordered rows and
+  requoting don't register as changes. Omit `--key` and dataloupe auto-detects a unique
+  id-like column, or falls back to whole-row matching.
+- Works across **any** two supported formats — diff a `.csv` export against a `.parquet`
+  snapshot, or last week's `.xlsx` against this week's.
+- Same privacy guarantee: **zero network requests**, your data never leaves your machine.
+  Commit the report, email it, or drop it in a review.
+
 ## Programmatic API
 
 dataloupe is also a library. Install it (`npm install dataloupe`) and generate the same
@@ -128,6 +152,9 @@ const out = renderHtml(ds);
 | `datasetFromRows(rows, meta?)` | In-memory rows → analyzed `Dataset`. |
 | `buildDatasetFromText(text, format, opts?)` | Text string → analyzed `Dataset`. |
 | `renderHtml(dataset)` | `Dataset` → self-contained HTML string. |
+| `diffFiles(before, after, opts?)` | Diff two files → self-contained HTML diff report. |
+| `diffDatasets(before, after, opts?)` | Two `Dataset`s → structured `DiffResult`. |
+| `renderDiffHtml(result)` | `DiffResult` → self-contained HTML diff report. |
 | `VERSION` | The dataloupe version string. |
 
 ## Features
@@ -138,6 +165,7 @@ const out = renderHtml(ds);
 - **Per-column statistics.** Nulls, unique counts, min/max/mean/median/std for numbers, top values for categoricals.
 - **Auto charts.** Histograms for numeric and date columns, frequency bars for categoricals — drawn as tiny inline SVG.
 - **Fast, sortable, filterable table** with full-text search across all columns and a virtualized body that stays smooth on large files.
+- **`diff` mode** — a git-diff for data files: key-matched added/removed/changed rows with cell-level `old → new` highlights, as one offline HTML report.
 - **Light & dark themes**, responsive layout, keyboard-friendly.
 - **Small.** A typical report is tens of KB plus your data.
 

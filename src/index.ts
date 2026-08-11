@@ -32,6 +32,8 @@ import {
   type DatasetMeta,
 } from "./dataset.js";
 import { renderHtml } from "./render.js";
+import { diffDatasets, type DiffOptions } from "./diff-core.js";
+import { renderDiffHtml } from "./diff-render.js";
 import type { Format, ParseOptions } from "./parse.js";
 import type { Dataset, Row } from "./types.js";
 
@@ -54,6 +56,28 @@ export { buildDatasetFromText };
 
 /** Render an already-built {@link Dataset} to a self-contained HTML string. */
 export { renderHtml };
+
+/**
+ * Diff two datasets into a structured result (added / removed / changed rows).
+ * Pass a `key` to match rows and get cell-level changes; otherwise rows are
+ * matched by whole-row equality.
+ */
+export { diffDatasets } from "./diff-core.js";
+
+/** Render a {@link DiffResult} to a self-contained, offline HTML diff report. */
+export { renderDiffHtml } from "./diff-render.js";
+
+/**
+ * Convenience: diff two data files and return the self-contained HTML report.
+ */
+export async function diffFiles(
+  before: string,
+  after: string,
+  opts: DiffOptions = {},
+): Promise<string> {
+  const [b, a] = await Promise.all([buildDataset(before), buildDataset(after)]);
+  return renderDiffHtml(diffDatasets(b, a, opts));
+}
 
 /** Current dataloupe version. */
 export { VERSION } from "./render.js";
@@ -85,3 +109,4 @@ export function renderText(text: string, format: Format, opts: ParseOptions = {}
 export type { Dataset, Row, ColType, ColumnStats } from "./types.js";
 export type { Format, ParseOptions } from "./parse.js";
 export type { DatasetMeta } from "./dataset.js";
+export type { DiffOptions, DiffResult, ChangedRow, CellChange } from "./diff-core.js";
