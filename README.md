@@ -228,6 +228,9 @@ node dist/cli.js path/to/data.csv --open
 Bug reports, feature requests, and pull requests are welcome. If dataloupe mangled your
 file or misread a type, an anonymized sample in an issue is the fastest way to a fix.
 
+See [CONTRIBUTING.md](CONTRIBUTING.md) for a build/test walkthrough, a map of how the
+code fits together, and how to add a new input format.
+
 ## License
 
 [MIT](LICENSE) © Aurelio Nakamura
