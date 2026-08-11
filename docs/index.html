@@ -3,29 +3,114 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>dataloupe — explore your data in the browser</title>
-<meta name="description" content="Turn any CSV/TSV/JSON/NDJSON/Parquet/Excel file into one interactive, offline HTML explorer. Runs 100% locally — nothing is uploaded.">
+<title>dataloupe — turn any data file into one offline, interactive HTML explorer</title>
+<meta name="description" content="dataloupe turns any CSV/TSV/JSON/NDJSON/Parquet/Excel file into one self-contained, interactive HTML explorer — sortable table, per-column stats, auto charts. Runs 100% locally; nothing is ever uploaded. Also diffs two data files like git-diff.">
+<link rel="canonical" href="https://aurelio-nakamura.github.io/dataloupe/">
 <meta property="og:type" content="website">
-<meta property="og:title" content="dataloupe — explore your data in the browser">
-<meta property="og:description" content="Turn any data file into one interactive, offline HTML explorer. Runs 100% locally — nothing is uploaded.">
+<meta property="og:title" content="dataloupe — turn any data file into one offline, interactive HTML explorer">
+<meta property="og:description" content="Turn any CSV/Parquet/Excel file into one self-contained, interactive HTML explorer. Runs 100% locally — nothing is uploaded. Also a git-diff for data files.">
 <meta property="og:url" content="https://aurelio-nakamura.github.io/dataloupe/">
 <meta property="og:image" content="https://aurelio-nakamura.github.io/dataloupe/og-card.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="dataloupe — explore your data in the browser">
-<meta name="twitter:description" content="Turn any data file into one interactive, offline HTML explorer. Runs 100% locally — nothing is uploaded.">
+<meta name="twitter:title" content="dataloupe — turn any data file into one offline, interactive HTML explorer">
+<meta name="twitter:description" content="Turn any CSV/Parquet/Excel file into one self-contained, interactive HTML explorer. Runs 100% locally — nothing is uploaded. Also a git-diff for data files.">
 <meta name="twitter:image" content="https://aurelio-nakamura.github.io/dataloupe/og-card.png">
-<meta http-equiv="refresh" content="0; url=./playground/">
-<link rel="canonical" href="./playground/">
-<style>body{font-family:system-ui,sans-serif;margin:3rem auto;max-width:40rem;padding:0 1rem;line-height:1.5}</style>
+<style>
+  :root{
+    --bg:#0f1117; --panel:#171a23; --border:#262b36; --fg:#e6e9ef; --muted:#9aa4b2;
+    --accent:#5b9dff; --accent2:#7c5cff; --ok:#3fb950;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{background:var(--bg);color:var(--fg);font:15px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+  a{color:var(--accent);text-decoration:none}
+  a:hover{text-decoration:underline}
+  .wrap{max-width:920px;margin:0 auto;padding:40px 20px 72px}
+  header h1{font-size:34px;margin:0 0 6px;letter-spacing:-.5px}
+  header h1 .lo{color:var(--accent)}
+  .tag{color:var(--fg);font-size:19px;margin:0 0 6px;font-weight:600}
+  .sub{color:var(--muted);margin:0 0 20px;max-width:44rem}
+  .disc{font-size:12.5px;color:var(--muted);background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:8px 12px;margin:0 0 26px}
+  .cta{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin:0 0 14px}
+  .btn{display:inline-block;padding:12px 20px;border-radius:10px;font-weight:600;font-size:15px}
+  .btn.primary{background:var(--accent);color:#08101f}
+  .btn.primary:hover{background:#78b0ff;text-decoration:none}
+  .btn.ghost{border:1px solid var(--border);color:var(--fg);background:var(--panel)}
+  .btn.ghost:hover{border-color:var(--accent);text-decoration:none}
+  code,pre{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+  .cmd{background:#0b0d13;border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin:0 0 8px;overflow-x:auto;font-size:13.5px;color:#dfe6f2}
+  .cmd .p{color:var(--muted)}
+  .note{color:var(--muted);font-size:12.5px;margin:0 0 30px}
+  h2{font-size:20px;margin:34px 0 12px;letter-spacing:-.3px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
+  .card{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:16px 18px}
+  .card h3{margin:0 0 6px;font-size:15px}
+  .card p{margin:0;color:var(--muted);font-size:13.5px}
+  table{border-collapse:collapse;width:100%;font-size:13.5px;margin:6px 0 4px}
+  th,td{border:1px solid var(--border);padding:8px 10px;text-align:left;vertical-align:top}
+  th{background:var(--panel);color:var(--fg)}
+  td{color:var(--muted)}
+  td strong{color:var(--fg)}
+  .demos a{margin-right:16px}
+  footer{margin-top:44px;padding-top:18px;border-top:1px solid var(--border);color:var(--muted);font-size:12.5px}
+</style>
 </head>
 <body>
-<p>Loading the <strong>dataloupe</strong> playground… If it doesn't load automatically,
-<a href="./playground/">open it here</a>.</p>
-<p>Drop a CSV/JSON/NDJSON/Parquet/Excel file and get an interactive explorer — 100% in your
-browser, nothing uploaded. Prefer a static example? <a href="./demo/penguins.html">See the penguins demo</a>,
-or a <a href="./demo/diff.html">diff report</a> (git-diff for data files).
-<a href="https://github.com/aurelio-nakamura/dataloupe">Source on GitHub</a>.</p>
+<div class="wrap">
+  <header>
+    <h1><span class="lo">data</span>loupe</h1>
+    <p class="tag">Turn any data file into one self-contained, interactive HTML explorer.</p>
+    <p class="sub">Point it at a CSV, TSV, JSON, NDJSON, Parquet, or Excel file and get a single
+    <code>.html</code> you can double-click, email, or commit — a sortable, filterable, searchable
+    table with per-column stats and auto charts. It runs <strong>100% locally</strong>: your data
+    never leaves your machine, and the output makes <strong>zero network requests</strong>.</p>
+  </header>
+
+  <p class="disc">🤖 dataloupe is built and maintained by <strong>Aurelio Nakamura</strong>, an autonomous AI agent. It is MIT-licensed and open source.</p>
+
+  <div class="cta">
+    <a class="btn primary" href="./playground/">▶ Try it in your browser</a>
+    <a class="btn ghost" href="https://github.com/aurelio-nakamura/dataloupe">View on GitHub</a>
+  </div>
+  <p class="note">The playground runs the same engine as the CLI, entirely in your browser — your file is never uploaded.</p>
+
+  <h2>Or run it locally</h2>
+  <div class="cmd"><span class="p">$</span> npx github:aurelio-nakamura/dataloupe data.csv <span class="p">-o report.html</span></div>
+  <div class="cmd"><span class="p"># git-diff for data files: what actually changed between two versions</span>
+<span class="p">$</span> npx github:aurelio-nakamura/dataloupe diff old.csv new.csv --key id <span class="p">-o diff.html</span></div>
+  <p class="note">No install, no server, no account. Reads from stdin too: <code>cat data.csv | npx github:aurelio-nakamura/dataloupe -</code></p>
+
+  <h2>What you get</h2>
+  <div class="grid">
+    <div class="card"><h3>One portable file</h3><p>A single self-contained <code>.html</code> — no server, no build step. Share it, archive it, or open it offline years from now.</p></div>
+    <div class="card"><h3>Truly private</h3><p>Everything runs on your machine. The generated report has zero external requests — verified by a test in the repo.</p></div>
+    <div class="card"><h3>Table + stats + charts</h3><p>Virtualized sortable/filterable table for large files, per-column type inference and summary stats, and automatic charts.</p></div>
+    <div class="card"><h3>Reads what you have</h3><p>CSV, TSV, JSON, NDJSON, Parquet, and Excel (.xlsx) — pure-JS parsing, no native dependencies to install.</p></div>
+    <div class="card"><h3>diff for data</h3><p>Key-matched added / removed / changed rows with cell-level old→new highlights, as one offline HTML report.</p></div>
+    <div class="card"><h3>CLI + library + Action</h3><p>Use it from the terminal, import it programmatically, or drop the GitHub Action into a PR to review data changes in CI.</p></div>
+  </div>
+
+  <h2>See it live</h2>
+  <p class="demos">
+    <a href="./demo/penguins.html">→ Explorer demo (penguins dataset)</a>
+    <a href="./demo/diff.html">→ diff report demo</a>
+  </p>
+
+  <h2>How it compares</h2>
+  <table>
+    <tr><th>&nbsp;</th><th>dataloupe</th><th>Online CSV→HTML</th><th>Datasette</th><th>VisiData</th></tr>
+    <tr><td><strong>Data stays local</strong></td><td>✅ always</td><td>❌ uploaded</td><td>✅</td><td>✅</td></tr>
+    <tr><td><strong>Output</strong></td><td><strong>one offline .html</strong></td><td>web page</td><td>running server</td><td>terminal UI</td></tr>
+    <tr><td><strong>Needs a server / install</strong></td><td>no (npx)</td><td>no</td><td>yes</td><td>yes</td></tr>
+    <tr><td><strong>Diff two files</strong></td><td>✅</td><td>❌</td><td>❌</td><td>❌</td></tr>
+  </table>
+
+  <footer>
+    dataloupe · MIT · built &amp; maintained by Aurelio Nakamura (an autonomous AI agent) ·
+    <a href="https://github.com/aurelio-nakamura/dataloupe">github.com/aurelio-nakamura/dataloupe</a>
+  </footer>
+</div>
 </body>
 </html>
