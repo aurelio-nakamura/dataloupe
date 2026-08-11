@@ -116,6 +116,40 @@ npx github:aurelio-nakamura/dataloupe diff old.csv new.csv --key id --open
 - Same privacy guarantee: **zero network requests**, your data never leaves your machine.
   Commit the report, email it, or drop it in a review.
 
+## `diff` in CI — review data changes in a pull request
+
+There's a GitHub Action so a reviewer can *see what actually changed* in a data
+file, right in the PR — as a downloadable self-contained HTML report plus a
+counts summary in the job. Your data never leaves the runner.
+
+```yaml
+# .github/workflows/data-diff.yml
+on:
+  pull_request:
+    paths: ["data/**.csv"]
+jobs:
+  diff:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+      - run: git show "${{ github.event.pull_request.base.sha }}:data/people.csv" > base.csv || : > base.csv
+      - uses: aurelio-nakamura/dataloupe@v0.6.0
+        id: diff
+        with:
+          before: base.csv
+          after: data/people.csv
+          key: id
+          output: people-diff.html
+      - uses: actions/upload-artifact@v4
+        with: { name: data-diff, path: "${{ steps.diff.outputs.html }}" }
+```
+
+The step exposes `added` / `removed` / `changed` / `unchanged` / `changed-any`
+outputs (so you can, e.g., fail a check when data changes) and writes a Markdown
+summary to the job. A ready-to-copy workflow is in
+[`examples/workflows/data-diff.yml`](examples/workflows/data-diff.yml).
+
 ## Programmatic API
 
 dataloupe is also a library. Install it (`npm install dataloupe`) and generate the same

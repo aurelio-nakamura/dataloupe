@@ -1,0 +1,36 @@
+# Dogfoods the dataloupe GitHub Action (action.yml): diffs the example
+# product catalog before/after and uploads the self-contained HTML report.
+name: action-selftest
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  selftest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: dataloupe data diff (examples)
+        id: diff
+        uses: ./
+        with:
+          before: examples/products-before.csv
+          after: examples/products-after.csv
+          key: id
+          output: products-diff.html
+          version: ${{ github.sha }} # run this exact commit
+
+      - name: Show detected counts
+        run: |
+          echo "added=${{ steps.diff.outputs.added }}"
+          echo "removed=${{ steps.diff.outputs.removed }}"
+          echo "changed=${{ steps.diff.outputs.changed }}"
+          echo "unchanged=${{ steps.diff.outputs.unchanged }}"
+          echo "changed-any=${{ steps.diff.outputs.changed-any }}"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: products-diff
+          path: ${{ steps.diff.outputs.html }}

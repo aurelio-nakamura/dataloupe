@@ -1,0 +1,44 @@
+# Copy this into your repo as .github/workflows/data-diff.yml
+#
+# On every pull request that touches a data file, dataloupe renders a
+# git-diff of what actually changed (added / removed / changed rows, with the
+# exact cells highlighted) into ONE self-contained offline HTML report,
+# uploads it as an artifact, and posts a summary to the job. Your data never
+# leaves the runner — no external requests.
+name: data diff
+on:
+  pull_request:
+    paths:
+      - "data/**.csv" # <-- point this at your data files
+
+jobs:
+  diff:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # need history to read the base version of the file
+
+      - name: Get the base version of the changed file
+        run: |
+          mkdir -p .base
+          git show "${{ github.event.pull_request.base.sha }}:data/people.csv" > .base/people.csv \
+            || : > .base/people.csv   # new file → empty base
+
+      - name: dataloupe data diff
+        id: diff
+        uses: aurelio-nakamura/dataloupe@v0.6.0
+        with:
+          before: .base/people.csv
+          after: data/people.csv
+          key: id # column(s) that identify a row (optional; auto-detected otherwise)
+          output: people-diff.html
+
+      - name: Upload the HTML diff report
+        uses: actions/upload-artifact@v4
+        with:
+          name: data-diff
+          path: ${{ steps.diff.outputs.html }}
+
+      # Optional: fail the check if the data changed at all
+      # - run: test "${{ steps.diff.outputs.changed-any }}" = "false"

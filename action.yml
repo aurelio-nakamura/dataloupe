@@ -1,0 +1,102 @@
+name: "dataloupe data diff"
+description: "Diff two data files (CSV/TSV/JSON/NDJSON/Parquet/xlsx) into one self-contained offline HTML report, with a summary in the job. Data never leaves the runner."
+author: "Aurelio Nakamura (AI agent)"
+branding:
+  icon: "git-pull-request"
+  color: "purple"
+
+inputs:
+  before:
+    description: "Path to the BEFORE version of the data file."
+    required: true
+  after:
+    description: "Path to the AFTER version of the data file."
+    required: true
+  key:
+    description: "Column(s) that identify a row, comma-separated (enables per-cell change detection). Auto-detected from a unique id-like column when omitted."
+    required: false
+    default: ""
+  output:
+    description: "Path to write the self-contained HTML diff report."
+    required: false
+    default: "dataloupe-diff.html"
+  version:
+    description: "dataloupe version/ref to run (a git tag, branch or commit of aurelio-nakamura/dataloupe)."
+    required: false
+    default: "v0.6.0"
+  summary:
+    description: "Write a Markdown summary of the counts to the GitHub job summary."
+    required: false
+    default: "true"
+
+outputs:
+  html:
+    description: "Path to the generated self-contained HTML diff report."
+    value: ${{ steps.diff.outputs.html }}
+  added:
+    description: "Number of added rows."
+    value: ${{ steps.diff.outputs.added }}
+  removed:
+    description: "Number of removed rows."
+    value: ${{ steps.diff.outputs.removed }}
+  changed:
+    description: "Number of changed rows."
+    value: ${{ steps.diff.outputs.changed }}
+  unchanged:
+    description: "Number of unchanged rows."
+    value: ${{ steps.diff.outputs.unchanged }}
+  changed-any:
+    description: "\"true\" if there were any added/removed/changed rows, else \"false\"."
+    value: ${{ steps.diff.outputs.changed-any }}
+
+runs:
+  using: "composite"
+  steps:
+    - id: diff
+      shell: bash
+      env:
+        DL_BEFORE: ${{ inputs.before }}
+        DL_AFTER: ${{ inputs.after }}
+        DL_KEY: ${{ inputs.key }}
+        DL_OUTPUT: ${{ inputs.output }}
+        DL_VERSION: ${{ inputs.version }}
+        DL_SUMMARY: ${{ inputs.summary }}
+      run: |
+        set -euo pipefail
+
+        key_args=()
+        if [ -n "${DL_KEY}" ]; then
+          key_args=(--key "${DL_KEY}")
+        fi
+
+        echo "dataloupe: diffing '${DL_BEFORE}' -> '${DL_AFTER}'"
+        npx --yes "github:aurelio-nakamura/dataloupe#${DL_VERSION}" diff \
+          "${DL_BEFORE}" "${DL_AFTER}" "${key_args[@]}" \
+          -o "${DL_OUTPUT}" --json > "${RUNNER_TEMP:-/tmp}/dataloupe-summary.json"
+
+        node - "${RUNNER_TEMP:-/tmp}/dataloupe-summary.json" <<'NODE'
+        const fs = require("fs");
+        const s = JSON.parse(fs.readFileSync(process.argv[2], "utf8"));
+        const c = s.counts;
+        const out = process.env.GITHUB_OUTPUT;
+        const set = (k, v) => fs.appendFileSync(out, `${k}=${v}\n`);
+        set("html", s.output);
+        set("added", c.added);
+        set("removed", c.removed);
+        set("changed", c.changed);
+        set("unchanged", c.unchanged);
+        set("changed-any", s.changed ? "true" : "false");
+
+        if ((process.env.DL_SUMMARY || "true") === "true" && process.env.GITHUB_STEP_SUMMARY) {
+          const key = (s.keyColumns && s.keyColumns.length)
+            ? `\`${s.keyColumns.join(",")}\`${s.keyAuto ? " (auto-detected)" : ""}`
+            : "whole-row match (no key)";
+          const md =
+            `### dataloupe data diff\n\n` +
+            `| ➕ added | ➖ removed | 🔀 changed | = unchanged |\n` +
+            `|---:|---:|---:|---:|\n` +
+            `| ${c.added} | ${c.removed} | ${c.changed} | ${c.unchanged} |\n\n` +
+            `Key: ${key}. Report: \`${s.output}\` (self-contained HTML, generated offline).\n`;
+          fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, md);
+        }
+        NODE

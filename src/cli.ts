@@ -137,10 +137,11 @@ interface DiffArgs {
   output?: string;
   key?: string;
   open: boolean;
+  json: boolean;
 }
 
 function parseDiffArgs(argv: string[]): DiffArgs {
-  const a: DiffArgs = { open: false };
+  const a: DiffArgs = { open: false, json: false };
   for (let i = 0; i < argv.length; i++) {
     const arg = argv[i];
     if (arg === "-o" || arg === "--output") a.output = argv[++i];
@@ -148,6 +149,7 @@ function parseDiffArgs(argv: string[]): DiffArgs {
     else if (arg === "-k" || arg === "--key") a.key = argv[++i];
     else if (arg.startsWith("--key=")) a.key = arg.slice(6);
     else if (arg === "--open") a.open = true;
+    else if (arg === "--json") a.json = true;
     else if (!arg.startsWith("-")) {
       if (!a.before) a.before = arg;
       else if (!a.after) a.after = arg;
@@ -169,6 +171,7 @@ OPTIONS
   -k, --key <col[,col]> column(s) that identify a row → enables per-cell changes
                         (auto-detected from a unique id-like column when omitted)
   -o, --output <file>   output HTML path (default: <after>.diff.html)
+      --json            print a machine-readable summary (counts) to stdout
       --open            open the result in your browser when done
 
 Emits a single self-contained .html: added / removed / changed rows with the
@@ -210,11 +213,31 @@ async function runDiff(argv: string[]): Promise<void> {
   const keyNote = result.keyColumns.length
     ? `key: ${result.keyColumns.join(",")}${result.keyAuto ? " (auto)" : ""}`
     : "whole-row match (no key)";
-  process.stdout.write(
-    `dataloupe diff → ${output}\n` +
-      `  +${c.added} added · \u2212${c.removed} removed · ~${c.changed} changed · =${c.unchanged} unchanged\n` +
-      `  ${keyNote} · ${fmtBytes(size)} · ${ms} ms\n`,
-  );
+  if (a.json) {
+    // Machine-readable summary for CI/GitHub Action consumption.
+    process.stdout.write(
+      JSON.stringify({
+        output,
+        bytes: size,
+        ms,
+        keyColumns: result.keyColumns,
+        keyAuto: result.keyAuto,
+        counts: {
+          added: c.added,
+          removed: c.removed,
+          changed: c.changed,
+          unchanged: c.unchanged,
+        },
+        changed: c.added + c.removed + c.changed > 0,
+      }) + "\n",
+    );
+  } else {
+    process.stdout.write(
+      `dataloupe diff → ${output}\n` +
+        `  +${c.added} added · \u2212${c.removed} removed · ~${c.changed} changed · =${c.unchanged} unchanged\n` +
+        `  ${keyNote} · ${fmtBytes(size)} · ${ms} ms\n`,
+    );
+  }
   if (a.open) await openInBrowser(output);
 }
 
