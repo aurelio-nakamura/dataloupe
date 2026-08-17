@@ -69,6 +69,17 @@ describe("renderHtml", () => {
     expect(html).toContain("NYC");
   });
 
+  it("ships the durable/shareable view-state code (URL-hash sync)", async () => {
+    const p = await tmp("d.csv", "id,city\n1,NYC\n2,LA\n");
+    const ds = await buildDataset(p);
+    const html = renderHtml(ds);
+    // The viewer mirrors query/sort/focus/theme into location.hash so a filtered,
+    // sorted view can be bookmarked or shared. Guard the shipped markers.
+    expect(html).toContain("hashchange");
+    expect(html).toContain("sortcol");
+    expect(html).toContain("replaceState");
+  });
+
   it("embeds a human --title and --note when provided, and sets the tab title", async () => {
     const p = await tmp("t.csv", "id,city\n1,NYC\n");
     const ds = await buildDataset(p);

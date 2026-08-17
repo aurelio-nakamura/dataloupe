@@ -87,6 +87,55 @@ let activeCol = -1;
 
 const colType = (i: number) => D.types[D.columns[i]];
 
+// ---- durable, shareable view state (URL hash) ----
+// The search query, sort column/direction, focused column and theme are mirrored
+// into location.hash so a view can be bookmarked or shared: copy the address bar
+// (works even for a double-clicked file://…#… artifact) and whoever opens the same
+// file at that fragment lands on the exact same filtered/sorted view. Fully offline;
+// the hash never causes a network request.
+let hashTheme: "light" | "dark" | null = null;
+let suppressHash = false; // guards the write-on-change / read-on-hashchange loop
+
+function readHash(): void {
+  const raw = location.hash.replace(/^#/, "");
+  if (!raw) return;
+  let p: URLSearchParams;
+  try { p = new URLSearchParams(raw); } catch { return; }
+  const q = p.get("q");
+  query = q ?? "";
+  const sc = p.get("sortcol");
+  if (sc !== null) {
+    const ci = D.columns.indexOf(sc);
+    sortCol = ci;
+    sortDir = p.get("sortdir") === "desc" ? -1 : 1;
+  } else { sortCol = -1; sortDir = 1; }
+  const col = p.get("col");
+  activeCol = col !== null ? D.columns.indexOf(col) : -1;
+  const th = p.get("theme");
+  hashTheme = th === "dark" || th === "light" ? th : null;
+}
+
+function writeHash(): void {
+  if (suppressHash) return;
+  const p = new URLSearchParams();
+  if (query.trim()) p.set("q", query);
+  if (sortCol >= 0) { p.set("sortcol", D.columns[sortCol]); if (sortDir === -1) p.set("sortdir", "desc"); }
+  if (activeCol >= 0) p.set("col", D.columns[activeCol]);
+  const theme = document.documentElement.getAttribute("data-theme");
+  if (theme) p.set("theme", theme);
+  const frag = p.toString();
+  const target = location.pathname + location.search + (frag ? "#" + frag : "#");
+  try {
+    history.replaceState(null, "", target);
+  } catch {
+    // file:// in some engines rejects replaceState with a URL; fall back to the
+    // fragment assignment (guarded so the resulting hashchange is ignored).
+    suppressHash = true;
+    location.hash = frag;
+    setTimeout(() => { suppressHash = false; }, 0);
+  }
+}
+
 function applyFilterSort() {
   const q = query.trim().toLowerCase();
   let idx: number[];
@@ -137,7 +186,7 @@ function renderHead() {
     th.addEventListener("click", () => {
       const c = +(th as HTMLElement).dataset.c!;
       if (sortCol === c) sortDir = sortDir === 1 ? -1 : 1; else { sortCol = c; sortDir = 1; }
-      applyFilterSort(); renderHead(); renderRows(); setActive(c);
+      applyFilterSort(); renderHead(); renderRows(); setActive(c); writeHash();
     });
   });
 }
@@ -165,10 +214,11 @@ function renderRows() {
   tbody.innerHTML = html;
 }
 
-function setActive(i: number) {
+function setActive(i: number, sync = false) {
   activeCol = i;
   document.querySelectorAll(".col-card").forEach((el) => el.classList.toggle("active", +(el as HTMLElement).dataset.i! === i));
   renderDetail(i);
+  if (sync) writeHash();
 }
 
 function renderSidebar() {
@@ -192,7 +242,7 @@ function renderSidebar() {
     </div>`;
   }).join("");
   side.querySelectorAll(".col-card").forEach((el) => {
-    el.addEventListener("click", () => setActive(+(el as HTMLElement).dataset.i!));
+    el.addEventListener("click", () => setActive(+(el as HTMLElement).dataset.i!, true));
   });
 }
 
@@ -277,6 +327,8 @@ function init() {
 
   scrollEl = $("#scroll"); spacer = $("#spacer"); tbody = $("#tbody"); theadRow = $("#thead");
 
+  readHash(); // restore any bookmarked/shared view from location.hash
+
   renderSidebar();
   renderHead();
   applyFilterSort();
@@ -287,25 +339,46 @@ function init() {
   window.addEventListener("resize", renderRows);
 
   const qEl = $("#q") as HTMLInputElement;
+  qEl.value = query; // reflect a restored query into the search box
   let deb: any;
   qEl.addEventListener("input", () => {
     clearTimeout(deb);
-    deb = setTimeout(() => { query = qEl.value; applyFilterSort(); scrollEl.scrollTop = 0; renderRows(); updateCount(); }, 120);
+    deb = setTimeout(() => { query = qEl.value; applyFilterSort(); scrollEl.scrollTop = 0; renderRows(); updateCount(); writeHash(); }, 120);
   });
   $("#theme").addEventListener("click", toggleTheme);
   applyInitialTheme();
+  if (activeCol >= 0) setActive(activeCol); // reopen a restored column detail
+
+  // React to back/forward or a manually edited fragment by re-applying the view.
+  window.addEventListener("hashchange", () => {
+    if (suppressHash) return;
+    readHash();
+    qEl.value = query;
+    applyInitialTheme();
+    applyFilterSort();
+    renderHead();
+    scrollEl.scrollTop = 0;
+    renderRows();
+    updateCount();
+    setActive(activeCol);
+  });
 }
 
 function updateCount() {
   $("#count").textContent = `${order.length.toLocaleString()} row${order.length === 1 ? "" : "s"}${query ? " matched" : ""}`;
 }
 function applyInitialTheme() {
+  // A theme pinned in the shared hash wins over the OS preference.
   const pref = matchMedia && matchMedia("(prefers-color-scheme: dark)").matches;
-  document.documentElement.setAttribute("data-theme", pref ? "dark" : "light");
+  const theme = hashTheme ?? (pref ? "dark" : "light");
+  document.documentElement.setAttribute("data-theme", theme);
 }
 function toggleTheme() {
   const cur = document.documentElement.getAttribute("data-theme");
-  document.documentElement.setAttribute("data-theme", cur === "dark" ? "light" : "dark");
+  const next = cur === "dark" ? "light" : "dark";
+  document.documentElement.setAttribute("data-theme", next);
+  hashTheme = next;
+  writeHash();
 }
 
 init();

@@ -217,6 +217,7 @@ const out = renderHtml(ds);
 - **Per-column statistics.** Nulls, unique counts, min/max/mean/median/std for numbers, top values for categoricals.
 - **Auto charts.** Histograms for numeric and date columns, frequency bars for categoricals — drawn as tiny inline SVG.
 - **Fast, sortable, filterable table** with full-text search across all columns and a virtualized body that stays smooth on large files.
+- **Shareable views.** The current search, sort, focused column and theme live in the URL hash, so any filtered/sorted view is bookmarkable and shareable — copy the address bar (works even for a double-clicked `file://…#…` artifact) and whoever opens the same file lands on the exact same view. Still 100% offline; the hash never triggers a request.
 - **`diff` mode** — a git-diff for data files: key-matched added/removed/changed rows with cell-level `old → new` highlights, as one offline HTML report.
 - **Light & dark themes**, responsive layout, keyboard-friendly.
 - **Small.** A typical report is tens of KB plus your data.
