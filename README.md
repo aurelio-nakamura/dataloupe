@@ -21,6 +21,12 @@ searchable / filterable table, per-column statistics, and auto-generated charts 
 it makes **zero network requests**: no CDN, no web fonts, no telemetry. **Your data
 never leaves your machine.**
 
+This isn't just a promise — every generated file ships a strict
+[Content-Security-Policy](https://developer.mozilla.org/docs/Web/HTTP/CSP) meta tag
+(`default-src 'none'; connect-src 'none'; …`) so the **browser itself blocks** any
+network request the page could ever try to make. Open it on an air-gapped machine and
+it behaves identically.
+
 ---
 
 ## Why

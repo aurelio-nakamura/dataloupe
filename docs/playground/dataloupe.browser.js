@@ -11,6 +11,7 @@ var Pr=Object.create;var It=Object.defineProperty;var zr=Object.getOwnPropertyDe
 <html lang="en">
 <head>
 <meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data:; connect-src 'none'; base-uri 'none'; form-action 'none'">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="generator" content="dataloupe ${Tt}">
 <title>dataloupe \xB7 ${o}</title>
