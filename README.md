@@ -68,6 +68,9 @@ OPTIONS
       --format <fmt>    force format: csv|tsv|json|ndjson|parquet|xlsx
       --delimiter <d>   field delimiter for csv/tsv (default: auto)
       --sheet <name>    worksheet to read from an .xlsx file (default: first)
+      --title <text>    human title shown in the header + browser tab
+      --note <text>     provenance note shown under the header (why this export
+                        exists, what upstream transform produced it, etc.)
   -h, --help            show this help
   -v, --version         print version
 ```
@@ -79,7 +82,14 @@ npx dataloupe events.ndjson --open
 npx dataloupe metrics.parquet -o report.html
 npx dataloupe budget.xlsx --sheet Q3 --open
 npx dataloupe big.csv --limit 100000
+npx dataloupe q1.csv --title "Q1 Expenses" --note "Exported from ledger; nulls dropped, USD"
 ```
+
+The generated file already embeds inspectable provenance — source filename,
+format, generation time, dataloupe version, row count, and each column's inferred
+type and stats — so a recipient can always tell *what* they're looking at.
+`--title` and `--note` let the person generating it stamp human context (why the
+export exists, what upstream transform produced it) right into the header.
 
 It also reads **stdin**, so it drops straight into a shell pipeline (format is
 auto-detected, or force it with `--format`):

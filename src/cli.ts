@@ -14,6 +14,8 @@ interface Args {
   format?: Format;
   delimiter?: string;
   sheet?: string;
+  title?: string;
+  note?: string;
   help: boolean;
   version: boolean;
 }
@@ -50,6 +52,12 @@ function parseArgs(argv: string[]): Args {
       case "--sheet":
         a.sheet = argv[++i];
         break;
+      case "--title":
+        a.title = argv[++i];
+        break;
+      case "--note":
+        a.note = argv[++i];
+        break;
       case "-":
         if (!a.input) a.input = "-";
         break;
@@ -59,6 +67,8 @@ function parseArgs(argv: string[]): Args {
         else if (arg.startsWith("--format=")) a.format = arg.slice(9) as Format;
         else if (arg.startsWith("--delimiter=")) a.delimiter = arg.slice(12);
         else if (arg.startsWith("--sheet=")) a.sheet = arg.slice(8);
+        else if (arg.startsWith("--title=")) a.title = arg.slice(8);
+        else if (arg.startsWith("--note=")) a.note = arg.slice(7);
         else if (!arg.startsWith("-") && !a.input) a.input = arg;
     }
   }
@@ -83,6 +93,9 @@ OPTIONS
       --format <fmt>    force format: csv|tsv|json|ndjson|parquet|xlsx
       --delimiter <d>   field delimiter for csv/tsv (default: auto)
       --sheet <name>    worksheet to read from an .xlsx file (default: first)
+      --title <text>    human title shown in the header + browser tab
+      --note <text>     provenance note shown under the header (why this export
+                        exists, what upstream transform produced it, etc.)
   -h, --help            show this help
   -v, --version         print version
 
@@ -283,7 +296,7 @@ async function main() {
       process.stderr.write(`dataloupe: failed to read stdin: ${(err as Error).message}\n`);
       process.exit(1);
     }
-    const html = renderHtml(ds);
+    const html = renderHtml(ds, { title: args.title, note: args.note });
     await writeFile(output, html, "utf8");
     const ms = Date.now() - t0;
     const size = Buffer.byteLength(html, "utf8");
@@ -315,7 +328,7 @@ async function main() {
     process.exit(1);
   }
 
-  const html = renderHtml(ds);
+  const html = renderHtml(ds, { title: args.title, note: args.note });
   await writeFile(output, html, "utf8");
 
   const ms = Date.now() - t0;

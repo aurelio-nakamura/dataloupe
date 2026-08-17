@@ -11,6 +11,7 @@ interface Payload {
   columns: string[]; types: Record<string, ColType>; rows: any[][];
   stats: ColumnStats[]; rowCount: number; totalRowCount?: number; truncated: boolean;
   source: string; format: string; generatedAt: string; version: string;
+  title?: string; note?: string;
 }
 
 const D = (window as any).__DATALOUPE__ as Payload;
@@ -223,16 +224,23 @@ function renderDetail(i: number) {
 }
 
 function init() {
-  document.title = `dataloupe · ${D.source.split(/[\\/]/).pop()}`;
+  const fileName = D.source.split(/[\\/]/).pop() || D.source;
+  const headline = D.title || fileName;
+  document.title = `dataloupe · ${headline}`;
   const app = document.createElement("div");
   app.className = "app";
   const truncNote = D.truncated && D.totalRowCount
     ? `<span class="trunc-note">⚠ showing first ${D.rowCount.toLocaleString()} of ${D.totalRowCount.toLocaleString()} rows</span>` : "";
+  // When a human title is set, keep the source filename visible as a secondary label.
+  const sourceLabel = D.title ? `<span class="src-sub" title="source file">${esc(fileName)}</span>` : "";
+  const noteBar = D.note
+    ? `<div class="note-bar"><span class="note-ico">✎</span><span class="note-txt">${esc(D.note)}</span></div>` : "";
   app.innerHTML = `
     <header class="topbar">
       <span class="brand"><span class="logo">◉</span> dataloupe</span>
       <span class="meta">
-        <span><b>${esc(D.source.split(/[\\/]/).pop() || D.source)}</b></span>
+        <span><b>${esc(headline)}</b></span>
+        ${sourceLabel}
         <span><b>${D.rowCount.toLocaleString()}</b> rows</span>
         <span><b>${D.columns.length}</b> cols</span>
         <span>${D.format}</span>
@@ -245,6 +253,7 @@ function init() {
       </span>
       <button class="iconbtn" id="theme">◐ theme</button>
     </header>
+    ${noteBar}
     <div class="body">
       <aside class="sidebar" id="sidebar"></aside>
       <main class="main">

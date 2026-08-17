@@ -69,6 +69,23 @@ describe("renderHtml", () => {
     expect(html).toContain("NYC");
   });
 
+  it("embeds a human --title and --note when provided, and sets the tab title", async () => {
+    const p = await tmp("t.csv", "id,city\n1,NYC\n");
+    const ds = await buildDataset(p);
+    const html = renderHtml(ds, { title: "Q1 Expenses", note: "dropped nulls; USD" });
+    expect(html).toContain('"title":"Q1 Expenses"');
+    expect(html).toContain('"note":"dropped nulls; USD"');
+    expect(html).toContain("<title>dataloupe · Q1 Expenses</title>");
+  });
+
+  it("omits title/note keys from the payload when not provided", async () => {
+    const p = await tmp("n.csv", "id,city\n1,NYC\n");
+    const ds = await buildDataset(p);
+    const html = renderHtml(ds);
+    expect(html).not.toContain('"title":');
+    expect(html).not.toContain('"note":');
+  });
+
   it("escapes a script-closing sequence inside data", async () => {
     const p = await tmp("e.csv", "id,html\n1,</script><b>x</b>\n");
     const ds = await buildDataset(p);

@@ -7,8 +7,15 @@ declare const __DATALOUPE_VERSION__: string | undefined;
 export const VERSION =
   typeof __DATALOUPE_VERSION__ !== "undefined" ? __DATALOUPE_VERSION__ : "0.0.0-dev";
 
+export interface RenderOptions {
+  /** Human-authored title shown in the header and the browser tab. */
+  title?: string;
+  /** Human-authored note/provenance shown under the header. */
+  note?: string;
+}
+
 /** Build the single self-contained HTML document for a dataset. */
-export function renderHtml(ds: Dataset): string {
+export function renderHtml(ds: Dataset, opts: RenderOptions = {}): string {
   // Convert row objects -> arrays in column order (smaller payload, faster viewer).
   const rows = ds.rows.map((r) => ds.columns.map((c) => normalize(r[c])));
 
@@ -24,11 +31,13 @@ export function renderHtml(ds: Dataset): string {
     format: ds.format,
     generatedAt: new Date().toISOString(),
     version: VERSION,
+    ...(opts.title ? { title: opts.title } : {}),
+    ...(opts.note ? { note: opts.note } : {}),
   };
 
   // JSON embedded in a script tag: escape "</" so a value can't close the tag.
   const json = JSON.stringify(payload).replace(/<\//g, "<\\/");
-  const title = escapeHtml(basename(ds.source));
+  const title = escapeHtml(opts.title || basename(ds.source));
 
   return `<!doctype html>
 <html lang="en">

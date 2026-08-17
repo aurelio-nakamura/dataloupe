@@ -70,6 +70,13 @@ button.iconbtn {
 button.iconbtn:hover { border-color: var(--accent); }
 .trunc-note { color: #b26a00; font-size: 12px; }
 [data-theme="dark"] .trunc-note { color: #e0a95e; }
+.src-sub { color: var(--muted); font-size: 12px; opacity: 0.85; }
+.note-bar { display: flex; align-items: flex-start; gap: 8px; padding: 8px 16px;
+  background: var(--note-bg, #fff8e1); border-bottom: 1px solid var(--border);
+  color: var(--text); font-size: 13px; line-height: 1.45; }
+.note-bar .note-ico { color: var(--muted); flex: none; }
+.note-bar .note-txt { white-space: pre-wrap; word-break: break-word; }
+[data-theme="dark"] .note-bar { --note-bg: #2a2410; }
 
 /* Body split */
 .body { display: flex; flex: 1; min-height: 0; }
