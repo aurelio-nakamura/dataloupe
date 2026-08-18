@@ -118,4 +118,31 @@ describe("renderHtml", () => {
     expect(payload).not.toContain("</script>");
     expect(payload).toContain("<\\/script>");
   });
+
+  // Hostile-input regression guard (from a security review of the shareable viewer):
+  // a crafted cell value must never break out of the JSON data island, and every
+  // generated artifact must carry the network-egress-blocking CSP so the policy stays
+  // the backstop even if a DOM sink is ever introduced.
+  it("neutralizes an html/script payload in a cell and keeps it inside the data island", async () => {
+    const payload = '<img src=x onerror=window.__x=1></script><script>window.__y=1</script>';
+    const p = await tmp("xss.csv", `id,note\n1,"${payload.replace(/"/g, '""')}"\n`);
+    const ds = await buildDataset(p);
+    const html = renderHtml(ds);
+    const marker = 'type="application/json">';
+    const islandStart = html.indexOf(marker) + marker.length;
+    const islandEnd = html.indexOf("</script>", islandStart);
+    const island = html.slice(islandStart, islandEnd);
+    const outsideIsland = html.slice(0, islandStart) + html.slice(islandEnd);
+    expect(island).not.toContain("</script>");
+    expect(outsideIsland).not.toContain("onerror=window.__x");
+    expect(outsideIsland).not.toContain("<script>window.__y");
+  });
+
+  it("embeds the network-blocking CSP in every generated file", async () => {
+    const p = await tmp("csp.csv", "id,city\n1,NYC\n");
+    const html = renderHtml(await buildDataset(p));
+    expect(html).toContain('http-equiv="Content-Security-Policy"');
+    expect(html).toContain("default-src 'none'");
+    expect(html).toContain("connect-src 'none'");
+  });
 });
