@@ -97,6 +97,16 @@ describe("renderHtml", () => {
     expect(html).not.toContain('"note":');
   });
 
+  it("bundles the collapsible provenance panel into the viewer", async () => {
+    const p = await tmp("p.csv", "id,city\n1,NYC\n");
+    const ds = await buildDataset(p);
+    const html = renderHtml(ds);
+    // The 'about this file' panel and its copy-link action ship inside the file.
+    expect(html).toContain("About this file");
+    expect(html).toContain("prov-panel");
+    expect(html).toContain("Copy link to this view");
+  });
+
   it("escapes a script-closing sequence inside data", async () => {
     const p = await tmp("e.csv", "id,html\n1,</script><b>x</b>\n");
     const ds = await buildDataset(p);

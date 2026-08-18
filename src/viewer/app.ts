@@ -218,6 +218,7 @@ function setActive(i: number, sync = false) {
   activeCol = i;
   document.querySelectorAll(".col-card").forEach((el) => el.classList.toggle("active", +(el as HTMLElement).dataset.i! === i));
   renderDetail(i);
+  refreshProv();
   if (sync) writeHash();
 }
 
@@ -301,9 +302,14 @@ function init() {
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
         <input id="q" type="search" placeholder="Search all columns…" autocomplete="off">
       </span>
+      <button class="iconbtn" id="about" title="About this file & current view">ⓘ about</button>
       <button class="iconbtn" id="theme">◐ theme</button>
     </header>
     ${noteBar}
+    <div class="prov-panel" id="prov" hidden>
+      <div class="prov-head"><span>About this file</span><button class="prov-close" id="prov-close" title="Close">✕</button></div>
+      <div class="prov-body" id="prov-body"></div>
+    </div>
     <div class="body">
       <aside class="sidebar" id="sidebar"></aside>
       <main class="main">
@@ -346,6 +352,9 @@ function init() {
     deb = setTimeout(() => { query = qEl.value; applyFilterSort(); scrollEl.scrollTop = 0; renderRows(); updateCount(); writeHash(); }, 120);
   });
   $("#theme").addEventListener("click", toggleTheme);
+  $("#about").addEventListener("click", () => toggleProv());
+  $("#prov-close").addEventListener("click", () => toggleProv(false));
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape" && provOpen) toggleProv(false); });
   applyInitialTheme();
   if (activeCol >= 0) setActive(activeCol); // reopen a restored column detail
 
@@ -366,6 +375,88 @@ function init() {
 
 function updateCount() {
   $("#count").textContent = `${order.length.toLocaleString()} row${order.length === 1 ? "" : "s"}${query ? " matched" : ""}`;
+  refreshProv();
+}
+
+// ---- provenance panel ----
+// A collapsible panel so a recipient of a shared file can understand what they're
+// looking at: where the data came from, when/how it was generated, any human note,
+// and — live — the exact filter/sort/column view currently applied (which is also
+// what the shareable link encodes). Everything here is already embedded in the file.
+let provOpen = false;
+
+function fmtGenerated(): string {
+  const d = new Date(D.generatedAt);
+  if (isNaN(d.getTime())) return D.generatedAt;
+  return d.toISOString().replace("T", " ").replace(/\.\d{3}Z$/, " UTC");
+}
+
+// Plain-English description of the active view; updates as filters/sorts change.
+function viewSentence(): string {
+  const parts: string[] = [];
+  if (query.trim()) parts.push(`rows matching “<b>${esc(query.trim())}</b>”`);
+  if (sortCol >= 0) parts.push(`sorted by <b>${esc(D.columns[sortCol])}</b> ${sortDir === 1 ? "ascending" : "descending"}`);
+  if (activeCol >= 0) parts.push(`column <b>${esc(D.columns[activeCol])}</b> in focus`);
+  if (!parts.length) return "All rows, unfiltered and unsorted.";
+  let s = parts.join("; ").replace(/^./, (c) => c.toUpperCase()) + ".";
+  if (query.trim()) s += ` <b>${order.length.toLocaleString()}</b> of ${D.rowCount.toLocaleString()} rows match.`;
+  return s;
+}
+
+function renderProvenance() {
+  const b = $("#prov-body");
+  if (!b) return;
+  const rowsLine = D.truncated && D.totalRowCount
+    ? `<b>${D.rowCount.toLocaleString()}</b> of ${D.totalRowCount.toLocaleString()} rows (truncated) · <b>${D.columns.length}</b> columns`
+    : `<b>${D.rowCount.toLocaleString()}</b> rows · <b>${D.columns.length}</b> columns`;
+  const row = (k: string, v: string) => `<div class="prov-row"><dt>${k}</dt><dd>${v}</dd></div>`;
+  let html = "";
+  if (D.title) html += row("Title", esc(D.title));
+  if (D.note) html += row("Note", esc(D.note));
+  html += row("Source", `${esc(D.source.split(/[\\/]/).pop() || D.source)} <span class="prov-dim">(${esc(D.format)})</span>`);
+  html += row("Generated", `${fmtGenerated()} <span class="prov-dim">by dataloupe ${esc(D.version)}</span>`);
+  html += row("Shape", rowsLine);
+  html += `<div class="prov-view"><dt>Current view</dt><dd>${viewSentence()}</dd></div>`;
+  b.innerHTML =
+    `<dl class="prov-dl">${html}</dl>` +
+    `<div class="prov-actions"><button class="prov-copy" id="prov-copy">Copy link to this view</button><span class="prov-copied" id="prov-copied"></span></div>` +
+    `<p class="prov-foot">Every field above travels inside this file. No data leaves your machine.</p>`;
+  const copyBtn = document.getElementById("prov-copy");
+  if (copyBtn) copyBtn.addEventListener("click", copyShareLink);
+}
+
+function copyShareLink() {
+  const note = document.getElementById("prov-copied");
+  const done = () => { if (note) { note.textContent = "Copied ✓"; setTimeout(() => { note.textContent = ""; }, 2000); } };
+  const fail = () => { if (note) note.textContent = "Press ⌘/Ctrl-C"; };
+  const url = location.href;
+  try {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(url).then(done, () => fallbackCopy(url, done, fail));
+    } else fallbackCopy(url, done, fail);
+  } catch { fallbackCopy(url, done, fail); }
+}
+
+function fallbackCopy(text: string, done: () => void, fail: () => void) {
+  try {
+    const ta = document.createElement("textarea");
+    ta.value = text; ta.style.position = "fixed"; ta.style.opacity = "0";
+    document.body.appendChild(ta); ta.focus(); ta.select();
+    const ok = document.execCommand("copy");
+    document.body.removeChild(ta);
+    ok ? done() : fail();
+  } catch { fail(); }
+}
+
+function refreshProv() { if (provOpen) renderProvenance(); }
+
+function toggleProv(force?: boolean) {
+  provOpen = force === undefined ? !provOpen : force;
+  const panel = $("#prov");
+  const btn = $("#about");
+  if (panel) panel.hidden = !provOpen;
+  if (btn) btn.classList.toggle("on", provOpen);
+  if (provOpen) renderProvenance();
 }
 function applyInitialTheme() {
   // A theme pinned in the shared hash wins over the OS preference.

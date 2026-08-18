@@ -97,6 +97,12 @@ type and stats — so a recipient can always tell *what* they're looking at.
 `--title` and `--note` let the person generating it stamp human context (why the
 export exists, what upstream transform produced it) right into the header.
 
+Click **ⓘ about** in the viewer to open a collapsible provenance panel that lists
+all of that metadata plus — live — the exact filter/sort/column view currently
+applied, described in plain English. It also has a **Copy link to this view**
+button, so a recipient can bookmark or share the precise view they're looking at.
+Every field shown travels inside the file; nothing is fetched.
+
 It also reads **stdin**, so it drops straight into a shell pipeline (format is
 auto-detected, or force it with `--format`):
 
@@ -218,6 +224,7 @@ const out = renderHtml(ds);
 - **Auto charts.** Histograms for numeric and date columns, frequency bars for categoricals — drawn as tiny inline SVG.
 - **Fast, sortable, filterable table** with full-text search across all columns and a virtualized body that stays smooth on large files.
 - **Shareable views.** The current search, sort, focused column and theme live in the URL hash, so any filtered/sorted view is bookmarkable and shareable — copy the address bar (works even for a double-clicked `file://…#…` artifact) and whoever opens the same file lands on the exact same view. Still 100% offline; the hash never triggers a request.
+- **Provenance panel.** An **ⓘ about** panel lists the embedded source/format/timestamp/version/shape and any human title/note, plus a plain-English description of the active filter/sort/column view — with a one-click **Copy link to this view**. Everything is already inside the file.
 - **`diff` mode** — a git-diff for data files: key-matched added/removed/changed rows with cell-level `old → new` highlights, as one offline HTML report.
 - **Light & dark themes**, responsive layout, keyboard-friendly.
 - **Small.** A typical report is tens of KB plus your data.
