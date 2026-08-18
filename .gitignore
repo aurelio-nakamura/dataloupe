@@ -1,5 +1,7 @@
 node_modules/
-dist/
+dist/*
+!dist/cli.js
+!dist/index.js
 *.log
 .DS_Store
 /tmp/
