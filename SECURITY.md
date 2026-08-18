@@ -17,6 +17,18 @@ email around, commit, and open on other machines.
   sequence in the source data is escaped (`<\/`) so a crafted cell value cannot
   close the script tag and break out into executable markup.
 
+## Threat model for shared views
+
+Since shareable views were added (v0.7.0), the worst case to reason about is an
+**attacker who ships a crafted file *and* a crafted link together** — the file
+carries hostile cell values, the URL carries a hostile `location.hash`. Because
+every hash-derived value renders inert (see below), the worst achievable outcome is
+a *confusing view* (a filter/sort the recipient didn't choose), never code execution
+or data egress. The invariant to preserve as features land on top of the parser and
+hash-restore is therefore simple and absolute: **no hash-derived string ever reaches
+a sink** (`innerHTML`, an attribute, `eval`, a URL, etc.), whatever gets built above
+the parser.
+
 ## Untrusted inputs
 
 Two inputs to the viewer are attacker-controllable when a crafted file (and, since
