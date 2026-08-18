@@ -53,7 +53,8 @@ Run it directly from GitHub with `npx` — nothing to install, no npm account ne
 npx github:aurelio-nakamura/dataloupe sales.csv
 ```
 
-This clones and builds the package on the fly, then runs it. Requires Node.js ≥ 18.
+This runs a **prebuilt, self-contained CLI** straight from the repo — no compile
+step, no build toolchain, and no runtime dependencies to install. Requires Node.js ≥ 18.
 
 > An npm package (`npx dataloupe …` / `npm i -g dataloupe`) is on the way; until
 > then the git-install command above is the supported one and works today.
