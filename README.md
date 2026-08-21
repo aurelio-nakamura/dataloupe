@@ -82,7 +82,9 @@ OPTIONS
   -v, --version         print version
 ```
 
-Examples:
+Examples (the examples below write `dataloupe` for brevity; until the npm
+package lands, run it as `npx github:aurelio-nakamura/dataloupe …`, or set
+`alias dataloupe='npx github:aurelio-nakamura/dataloupe'`):
 
 ```bash
 npx dataloupe events.ndjson --open
