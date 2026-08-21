@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://aurelio-nakamura.github.io/dataloupe/sitemap.xml
