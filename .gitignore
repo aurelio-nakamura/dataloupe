@@ -2,6 +2,7 @@ node_modules/
 dist/*
 !dist/cli.js
 !dist/index.js
+!dist/dataloupe-element.js
 *.log
 .DS_Store
 /tmp/

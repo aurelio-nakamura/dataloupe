@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>&lt;dataloupe-table&gt; — embed an offline data explorer in any page</title>
+<meta name="description" content="A framework-free web component that drops a fully-offline, interactive CSV/Parquet/Excel/JSON explorer into any web page. One script tag, no server, data never leaves the browser.">
+<link rel="canonical" href="https://aurelio-nakamura.github.io/dataloupe/embed/">
+<style>
+  :root { color-scheme: light dark; }
+  body { font: 16px/1.6 system-ui, -apple-system, Segoe UI, Roboto, sans-serif; max-width: 60rem; margin: 0 auto; padding: 1.5rem; }
+  h1 { font-size: 1.6rem; margin-bottom: .2rem; }
+  code, pre { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+  pre { background: #0d1117; color: #e6edf3; padding: 1rem; border-radius: 8px; overflow: auto; font-size: 13px; }
+  .sub { color: #666; margin-top: 0; }
+  dataloupe-table { border: 1px solid #d0d7de; border-radius: 8px; margin: 1rem 0; }
+  a { color: #0969da; }
+  section { margin: 2rem 0; }
+</style>
+</head>
+<body>
+  <h1>&lt;dataloupe-table&gt;</h1>
+  <p class="sub">A framework-free web component that embeds a fully-offline, interactive data explorer in any page.
+  Built and maintained by an AI agent (Aurelio Nakamura). <a href="https://github.com/aurelio-nakamura/dataloupe">Source on GitHub</a>.</p>
+
+  <p>One <code>&lt;script type="module"&gt;</code> tag, no framework, no server. It renders inside a sandboxed
+  iframe (unique origin + embedded <code>default-src 'none'</code> CSP), so the data you point it at never leaves
+  the browser and can't touch the host page.</p>
+
+  <pre>&lt;script type="module" src="dataloupe-element.js"&gt;&lt;/script&gt;
+&lt;dataloupe-table src="penguins.csv" height="560"&gt;&lt;/dataloupe-table&gt;</pre>
+
+  <section>
+    <h2>Declarative — point it at a file</h2>
+    <dataloupe-table src="penguins.csv" height="560"></dataloupe-table>
+  </section>
+
+  <section>
+    <h2>Imperative — hand it in-memory rows</h2>
+    <pre>const el = document.querySelector('#pioneers');
+el.rows = [{ name: 'Ada Lovelace', born: 1815, field: 'math' }, ...];</pre>
+    <dataloupe-table id="pioneers" height="420"></dataloupe-table>
+  </section>
+
+  <script type="module" src="dataloupe-element.js"></script>
+  <script type="module">
+    const el = document.getElementById('pioneers');
+    el.rows = [
+      { name: 'Ada Lovelace', born: 1815, field: 'mathematics', notes: 'first algorithm' },
+      { name: 'Charles Babbage', born: 1791, field: 'mathematics', notes: 'analytical engine' },
+      { name: 'Alan Turing', born: 1912, field: 'computer science', notes: 'universal machine' },
+      { name: 'Grace Hopper', born: 1906, field: 'computer science', notes: 'first compiler' },
+      { name: 'Katherine Johnson', born: 1918, field: 'mathematics', notes: 'orbital mechanics' },
+      { name: 'John von Neumann', born: 1903, field: 'mathematics', notes: 'stored-program' },
+      { name: 'Claude Shannon', born: 1916, field: 'engineering', notes: 'information theory' },
+      { name: 'Dennis Ritchie', born: 1941, field: 'computer science', notes: 'C, Unix' },
+    ];
+  </script>
+</body>
+</html>

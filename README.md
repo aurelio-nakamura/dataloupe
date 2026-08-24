@@ -218,6 +218,34 @@ const out = renderHtml(ds);
 | `renderDiffHtml(result)` | `DiffResult` → self-contained HTML diff report. |
 | `VERSION` | The dataloupe version string. |
 
+## `<dataloupe-table>` — embed the explorer in any web page
+
+Want the interactive explorer **inside your own page** instead of a standalone file? Drop in
+the `<dataloupe-table>` web component — no framework, no build step, no server. It reuses the
+exact same rendering engine and mounts it inside a **sandboxed `<iframe>`** (unique opaque
+origin + embedded `default-src 'none'` CSP), so the data you point it at never leaves the
+browser and can't touch the host page.
+
+**▶ [Live demo](https://aurelio-nakamura.github.io/dataloupe/embed/)**
+
+```html
+<script type="module" src="https://aurelio-nakamura.github.io/dataloupe/embed/dataloupe-element.js"></script>
+
+<!-- Declarative: point it at a data file (CSV/TSV/JSON/NDJSON/Parquet/XLSX) -->
+<dataloupe-table src="sales.csv" height="600"></dataloupe-table>
+```
+
+```js
+// Imperative: hand it in-memory rows
+const el = document.querySelector("dataloupe-table");
+el.rows = [{ name: "Ada", born: 1815 }, { name: "Alan", born: 1912 }];
+// ...or raw text: el.setText(csvString, "csv");
+```
+
+Attributes: `src`, `format`, `limit`, `title`, `height`. Events: `dataloupe:load` /
+`dataloupe:error`. Once the npm package is published you can also
+`import "dataloupe/element"` to register it from a bundler.
+
 ## Features
 
 - **Truly offline output.** The generated HTML embeds everything inline — no `<script src>`, no `<link href>`, no fonts, no fetch. Verify it yourself: unplug the network and open the file.
