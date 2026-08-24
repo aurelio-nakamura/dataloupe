@@ -228,12 +228,19 @@ browser and can't touch the host page.
 
 **▶ [Live demo](https://aurelio-nakamura.github.io/dataloupe/embed/)**
 
+Load it straight from a CDN — no npm, no build, no bundler. The bundle is ~110 KB, has zero
+runtime dependencies, and is served from the versioned git tag:
+
 ```html
-<script type="module" src="https://aurelio-nakamura.github.io/dataloupe/embed/dataloupe-element.js"></script>
+<script type="module"
+  src="https://cdn.jsdelivr.net/gh/aurelio-nakamura/dataloupe@v0.10.0/dist/dataloupe-element.js"></script>
 
 <!-- Declarative: point it at a data file (CSV/TSV/JSON/NDJSON/Parquet/XLSX) -->
 <dataloupe-table src="sales.csv" height="600"></dataloupe-table>
 ```
+
+> Prefer to self-host? The same file is on GitHub Pages:
+> `https://aurelio-nakamura.github.io/dataloupe/embed/dataloupe-element.js`
 
 ```js
 // Imperative: hand it in-memory rows
