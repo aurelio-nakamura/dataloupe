@@ -119,7 +119,7 @@ const MAX_ROWS = 200000;
 
 function setError(m){ err.textContent = m || ""; }
 
-async function handleFile(file){
+async function handleFile(file, opts){
   setError("");
   if(!file) return;
   const name = file.name || "data";
@@ -135,20 +135,20 @@ async function handleFile(file){
       html = renderText(await file.text(), fmt, name, MAX_ROWS);
     }
     const ms = Math.round(performance.now() - t0);
-    show(html, name, fmt, file.size, ms);
+    show(html, name, fmt, file.size, ms, opts);
   }catch(e){
     console.error(e);
     setError("Couldn't parse " + name + ": " + (e && e.message ? e.message : e));
   }
 }
 
-function show(html, name, fmt, size, ms){
+function show(html, name, fmt, size, ms, opts){
   lastHtml = html; lastName = name;
   frame.srcdoc = html;
   $("rname").textContent = name;
   $("rmeta").textContent = fmt.toUpperCase() + " · " + fmtBytes(size) + " · rendered in " + ms + " ms";
   result.classList.add("show");
-  result.scrollIntoView({behavior:"smooth", block:"start"});
+  if(!(opts && opts.noScroll)) result.scrollIntoView({behavior:"smooth", block:"start"});
 }
 
 function fmtBytes(n){
@@ -186,8 +186,7 @@ window.addEventListener("dragover", e=>e.preventDefault());
 window.addEventListener("drop", e=>e.preventDefault());
 
 // sample dataset (generated in-memory; no network)
-$("sample").addEventListener("click", (e)=>{
-  e.stopPropagation();
+function sampleFile(){
   const species=["Adelie","Gentoo","Chinstrap"], islands=["Torgersen","Biscoe","Dream"];
   let csv="species,island,bill_length_mm,bill_depth_mm,flipper_length_mm,body_mass_g,sex,year\n";
   let seed=42; const rnd=()=>{ seed=(seed*1103515245+12345)&0x7fffffff; return seed/0x7fffffff; };
@@ -198,8 +197,13 @@ $("sample").addEventListener("click", (e)=>{
     const sex=rnd()<0.5?"male":"female", yr=2007+Math.floor(rnd()*3);
     csv+=`${sp},${is},${bl},${bd},${fl},${bm},${sex},${yr}\n`;
   }
-  handleFile(new File([csv], "penguins-sample.csv", {type:"text/csv"}));
-});
+  return new File([csv], "penguins-sample.csv", {type:"text/csv"});
+}
+$("sample").addEventListener("click", (e)=>{ e.stopPropagation(); handleFile(sampleFile()); });
+
+// First impression: render a live sample immediately so visitors SEE the explorer
+// (not just an empty drop zone). Their own dropped/chosen file replaces it instantly.
+handleFile(sampleFile(), {noScroll:true});
 </script>
 </body>
 </html>
