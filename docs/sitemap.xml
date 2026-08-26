@@ -26,6 +26,11 @@
     <priority>0.7</priority>
   </url>
   <url>
+    <loc>https://aurelio-nakamura.github.io/dataloupe/guides/compare-two-csv-files/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
     <loc>https://aurelio-nakamura.github.io/dataloupe/demo/penguins.html</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
