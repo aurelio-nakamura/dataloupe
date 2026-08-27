@@ -253,6 +253,50 @@ Attributes: `src`, `format`, `limit`, `title`, `height`. Events: `dataloupe:load
 `dataloupe:error`. Once the npm package is published you can also
 `import "dataloupe/element"` to register it from a bundler.
 
+## MCP server — let an AI assistant explore your local data (offline)
+
+dataloupe ships an [MCP](https://modelcontextprotocol.io) server, so **Claude Desktop,
+Cursor, VS Code, and other MCP clients can inspect and query your local data files
+directly** — without a database, without a running server, and **without uploading a
+single byte anywhere**. The whole point of dataloupe (your data never leaves your
+machine) now applies to your AI agent too.
+
+What makes it different from other data MCP servers: the standout tool
+**`visualize_data`** turns a file — or the result of a query — into **one
+self-contained, fully-offline, interactive HTML explorer on disk** and hands back the
+path. Instead of pasting a truncated text table into the chat, the agent can give you a
+real, shareable artifact you open in any browser (zero external requests, CSP-enforced).
+
+Add it to an MCP client (example for Claude Desktop / Cursor `mcpServers` config):
+
+```json
+{
+  "mcpServers": {
+    "dataloupe": {
+      "command": "npx",
+      "args": ["-y", "github:aurelio-nakamura/dataloupe", "mcp"],
+      "env": { "DATALOUPE_MCP_ROOT": "/path/to/your/data" }
+    }
+  }
+}
+```
+
+`DATALOUPE_MCP_ROOT` is optional but recommended: it confines all file access to that
+directory. Tools exposed:
+
+| Tool | What it does |
+| --- | --- |
+| `list_data_files` | List CSV/TSV/JSON/NDJSON/Parquet/Excel files in a directory |
+| `describe_data` | Schema + row/column counts + per-column stats (types, nulls, unique, min/max/mean/median, top values) |
+| `preview_data` | First N rows as a Markdown table |
+| `query_data` | Read-only structured query: `where` / `select` / `order_by` / `limit` / `group_by` + `count/sum/avg/min/max` aggregations |
+| `visualize_data` | **Write a self-contained, offline, interactive HTML explorer** (optionally of a query result) and return its path |
+| `diff_data` | git-style diff of two files (added/removed/changed counts + optional offline HTML report) |
+
+Every tool is **read-only against your data** — dataloupe never modifies your files.
+
+> Once npm publish lands you'll be able to use `"command": "npx", "args": ["-y", "dataloupe", "mcp"]`.
+
 ## Features
 
 - **Truly offline output.** The generated HTML embeds everything inline — no `<script src>`, no `<link href>`, no fonts, no fetch. Verify it yourself: unplug the network and open the file.

@@ -1,17 +1,19 @@
 {
   "name": "dataloupe",
-  "version": "0.10.0",
+  "version": "0.11.0",
   "description": "Turn any CSV/TSV/JSON/NDJSON/Parquet/Excel file into a single, self-contained, fully-offline interactive HTML explorer. Nothing leaves your machine.",
   "type": "module",
   "bin": {
-    "dataloupe": "dist/cli.js"
+    "dataloupe": "dist/cli.js",
+    "dataloupe-mcp": "dist/mcp.js"
   },
   "files": [
     "dist/cli.js",
     "dist/index.js",
     "dist/dataloupe-element.js",
     "dist/*.d.ts",
-    "dist/generated/*.d.ts"
+    "dist/generated/*.d.ts",
+    "dist/mcp.js"
   ],
   "engines": {
     "node": ">=18"
@@ -19,14 +21,15 @@
   "scripts": {
     "build:viewer": "node scripts/build-viewer.mjs",
     "build:cli": "esbuild src/cli.ts --bundle --platform=node --format=esm --target=node18 --outfile=dist/cli.js --banner:js=\"#!/usr/bin/env node\" --define:__DATALOUPE_VERSION__=\\\"$npm_package_version\\\"",
-    "build": "npm run build:viewer && npm run build:cli && npm run build:lib && npm run build:types && npm run build:browser && npm run build:element",
+    "build": "npm run build:viewer && npm run build:cli && npm run build:mcp && npm run build:lib && npm run build:types && npm run build:browser && npm run build:element",
     "test": "vitest run",
     "dev": "npm run build && node dist/cli.js",
     "build:lib": "esbuild src/index.ts --bundle --platform=node --format=esm --target=node18 --outfile=dist/index.js --define:__DATALOUPE_VERSION__=\\\"$npm_package_version\\\"",
     "build:types": "tsc -p tsconfig.build.json",
     "build:browser": "node scripts/build-browser.mjs",
     "build:element": "node scripts/build-element.mjs",
-    "prepublishOnly": "npm run build"
+    "prepublishOnly": "npm run build",
+    "build:mcp": "esbuild src/mcp.ts --bundle --platform=node --format=esm --target=node18 --outfile=dist/mcp.js --banner:js=\"#!/usr/bin/env node\" --define:__DATALOUPE_VERSION__=\\\"$npm_package_version\\\""
   },
   "keywords": [
     "csv",
@@ -59,7 +62,6 @@
     "url": "https://github.com/aurelio-nakamura/dataloupe/issues"
   },
   "license": "MIT",
-  "dependencies": {},
   "devDependencies": {
     "@types/node": "^22.0.0",
     "@types/papaparse": "^5.3.14",
@@ -68,7 +70,8 @@
     "hyparquet": "^1.8.0",
     "papaparse": "^5.4.1",
     "typescript": "^5.6.0",
-    "vitest": "^2.1.0"
+    "vitest": "^2.1.0",
+    "@modelcontextprotocol/sdk": "^1.30.0"
   },
   "main": "dist/index.js",
   "module": "dist/index.js",

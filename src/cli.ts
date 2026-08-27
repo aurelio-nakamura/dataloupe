@@ -80,6 +80,7 @@ const HELP = `dataloupe ${VERSION} — turn a data file into one self-contained,
 USAGE
   dataloupe <file> [options]
   dataloupe diff <before> <after> [--key col]   (a git-diff for data files)
+  dataloupe mcp                                 (MCP server for AI assistants, stdio)
   npx dataloupe data.csv --open
 
 ARGUMENTS
@@ -257,6 +258,19 @@ async function runDiff(argv: string[]): Promise<void> {
 async function main() {
   if (process.argv[2] === "diff") {
     await runDiff(process.argv.slice(3));
+    return;
+  }
+  if (process.argv[2] === "mcp") {
+    // Launch the Model Context Protocol server (stdio) as a child process, with
+    // stdio inherited so JSON-RPC passes straight through. Kept out of the main
+    // CLI bundle so the common path never pays for the MCP SDK.
+    const { spawn } = await import("node:child_process");
+    const { fileURLToPath } = await import("node:url");
+    const serverPath = fileURLToPath(new URL("./mcp.js", import.meta.url));
+    const child = spawn(process.execPath, [serverPath, ...process.argv.slice(3)], {
+      stdio: "inherit",
+    });
+    child.on("exit", (code) => process.exit(code ?? 0));
     return;
   }
   const args = parseArgs(process.argv.slice(2));

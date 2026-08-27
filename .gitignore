@@ -1,6 +1,7 @@
 node_modules/
 dist/*
 !dist/cli.js
+!dist/mcp.js
 !dist/index.js
 !dist/dataloupe-element.js
 *.log
