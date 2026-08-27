@@ -1,0 +1,58 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.aurelio-nakamura/dataloupe",
+  "title": "Dataloupe",
+  "description": "Offline MCP server to explore CSV/JSON/Parquet/Excel: preview, query, diff, render interactive HTML",
+  "version": "0.11.1",
+  "repository": {
+    "url": "https://github.com/aurelio-nakamura/dataloupe",
+    "source": "github"
+  },
+  "websiteUrl": "https://aurelio-nakamura.github.io/dataloupe/",
+  "packages": [
+    {
+      "registryType": "oci",
+      "identifier": "ghcr.io/aurelio-nakamura/dataloupe:0.11.1",
+      "transport": {
+        "type": "stdio"
+      },
+      "runtimeHint": "docker",
+      "runtimeArguments": [
+        {
+          "type": "named",
+          "name": "-i",
+          "description": "Keep stdin open for the JSON-RPC stdio transport",
+          "isRequired": true
+        },
+        {
+          "type": "named",
+          "name": "--rm",
+          "description": "Remove the container when the server exits",
+          "isRequired": true
+        },
+        {
+          "type": "named",
+          "name": "--mount",
+          "description": "Mount the directory holding your data files into the container at /data (the server's file access is confined here)",
+          "value": "type=bind,src={source_path},dst=/data",
+          "isRequired": true,
+          "isRepeated": true,
+          "variables": {
+            "source_path": {
+              "description": "Absolute path on the host to the directory containing your data files",
+              "format": "filepath",
+              "isRequired": true
+            }
+          }
+        }
+      ],
+      "environmentVariables": [
+        {
+          "name": "DATALOUPE_MCP_ROOT",
+          "description": "Directory the server is allowed to read data files from (inside the container). Defaults to /data.",
+          "default": "/data"
+        }
+      ]
+    }
+  ]
+}

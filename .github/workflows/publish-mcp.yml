@@ -1,0 +1,73 @@
+name: Publish MCP server
+
+# Builds the offline dataloupe MCP server as an OCI image, pushes it to the
+# GitHub Container Registry (ghcr.io), and (on manual dispatch) publishes the
+# server to the official MCP Registry at registry.modelcontextprotocol.io.
+#
+# Authentication:
+#   - ghcr.io push uses the built-in GITHUB_TOKEN (no external secret).
+#   - MCP Registry publish uses GitHub OIDC (no external secret); the
+#     io.github.aurelio-nakamura/* namespace is authorized by the workflow's
+#     repository owner.
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      publish_registry:
+        description: "Also publish server.json to the official MCP Registry"
+        type: boolean
+        default: true
+
+jobs:
+  image:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    outputs:
+      version: ${{ steps.meta.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - id: meta
+        run: echo "version=$(node -p "require('./package.json').version")" >> "$GITHUB_OUTPUT"
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: |
+            ghcr.io/aurelio-nakamura/dataloupe:${{ steps.meta.outputs.version }}
+            ghcr.io/aurelio-nakamura/dataloupe:latest
+
+  registry:
+    needs: image
+    # The MCP-registry publish step is manual: it requires the ghcr package to
+    # be public so the registry can verify the ownership annotation.
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.publish_registry }}
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install mcp-publisher
+        run: |
+          curl -L "https://github.com/modelcontextprotocol/registry/releases/latest/download/mcp-publisher_linux_amd64.tar.gz" | tar xz mcp-publisher
+
+      - name: Authenticate to MCP Registry (GitHub OIDC)
+        run: ./mcp-publisher login github-oidc
+
+      - name: Publish server to MCP Registry
+        run: ./mcp-publisher publish

@@ -26,5 +26,9 @@ COPY package.json LICENSE README.md ./
 ENV DATALOUPE_MCP_ROOT=/data
 RUN mkdir -p /data
 
+# Ownership annotation for the official MCP Registry
+# (https://registry.modelcontextprotocol.io). Must match "name" in server.json.
+LABEL io.modelcontextprotocol.server.name="io.github.aurelio-nakamura/dataloupe"
+
 # MCP clients launch the server and talk JSON-RPC over stdio.
 ENTRYPOINT ["node", "/app/dist/mcp.js"]

@@ -297,6 +297,27 @@ Every tool is **read-only against your data** — dataloupe never modifies your 
 
 > Once npm publish lands you'll be able to use `"command": "npx", "args": ["-y", "dataloupe", "mcp"]`.
 
+### Run it as a container (no Node/npm needed)
+
+dataloupe's MCP server is published to the [official MCP Registry](https://registry.modelcontextprotocol.io)
+as `io.github.aurelio-nakamura/dataloupe` and shipped as an OCI image on the GitHub
+Container Registry. Point any MCP client at the image (it speaks JSON-RPC over stdio):
+
+```jsonc
+{
+  "mcpServers": {
+    "dataloupe": {
+      "command": "docker",
+      "args": ["run", "-i", "--rm", "--mount", "type=bind,src=/path/to/your/data,dst=/data",
+               "ghcr.io/aurelio-nakamura/dataloupe:latest"]
+    }
+  }
+}
+```
+
+Everything stays offline: the image has zero runtime dependencies and only reads the
+directory you mount at `/data`.
+
 ## Features
 
 - **Truly offline output.** The generated HTML embeds everything inline — no `<script src>`, no `<link href>`, no fonts, no fetch. Verify it yourself: unplug the network and open the file.
