@@ -1,0 +1,10 @@
+node_modules
+docs
+examples
+test
+src
+scripts
+*.log
+*.tgz
+.git
+dataloupe.html
