@@ -10,7 +10,7 @@
  * returns its path — so the agent can hand the user a shareable artifact,
  * not just a text table.
  */
-import { promises as fs } from "node:fs";
+import { promises as fs, realpathSync } from "node:fs";
 import * as path from "node:path";
 import * as os from "node:os";
 import { z } from "zod";
@@ -45,13 +45,39 @@ function extOf(p: string): string {
   return dot > 0 ? b.slice(dot).toLowerCase() : "";
 }
 
-/** Optional allow-list root. If set, all file access is confined to it. */
+/**
+ * Canonicalize a path by resolving symlinks on its longest existing prefix,
+ * then re-appending the not-yet-existing tail (e.g. a to-be-written out_path).
+ * This defeats symlink-escape: a symlink living inside ROOT that points outside
+ * ROOT would pass a naive string-prefix check, but its realpath does not.
+ */
+function canonicalize(p: string): string {
+  let cur = path.resolve(p);
+  const tail: string[] = [];
+  // Walk up until we find an existing ancestor we can realpath().
+  for (;;) {
+    try {
+      const real = realpathSync(cur);
+      return tail.length ? path.join(real, ...tail.reverse()) : real;
+    } catch {
+      const parent = path.dirname(cur);
+      if (parent === cur) return path.resolve(p); // nothing existed; give up
+      tail.push(path.basename(cur));
+      cur = parent;
+    }
+  }
+}
+
+/**
+ * Optional allow-list root. If set, all file access is confined to it.
+ * Canonicalized once so the confinement check compares real paths.
+ */
 const ROOT = process.env.DATALOUPE_MCP_ROOT
-  ? path.resolve(process.env.DATALOUPE_MCP_ROOT)
+  ? canonicalize(process.env.DATALOUPE_MCP_ROOT)
   : null;
 
 function resolveSafe(p: string): string {
-  const abs = path.resolve(p);
+  const abs = canonicalize(p);
   if (ROOT && !(abs === ROOT || abs.startsWith(ROOT + path.sep))) {
     throw new Error(
       `Access denied: '${abs}' is outside the allowed root '${ROOT}'.`,

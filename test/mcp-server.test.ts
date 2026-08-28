@@ -1,5 +1,11 @@
 import { spawn } from "node:child_process";
-import { mkdtempSync, writeFileSync, existsSync } from "node:fs";
+import {
+  mkdtempSync,
+  writeFileSync,
+  existsSync,
+  mkdirSync,
+  symlinkSync,
+} from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, expect, it, beforeAll } from "vitest";
@@ -7,8 +13,11 @@ import { describe, expect, it, beforeAll } from "vitest";
 const SERVER = join(__dirname, "..", "dist", "mcp.js");
 
 /** Minimal stdio JSON-RPC client for the built MCP server. */
-function startClient() {
-  const proc = spawn("node", [SERVER], { stdio: ["pipe", "pipe", "pipe"] });
+function startClient(env?: Record<string, string>) {
+  const proc = spawn("node", [SERVER], {
+    stdio: ["pipe", "pipe", "pipe"],
+    env: { ...process.env, ...env },
+  });
   let buf = "";
   const pending = new Map<number, (m: any) => void>();
   proc.stdout.on("data", (d) => {
@@ -89,6 +98,49 @@ describe("dataloupe MCP server (stdio)", () => {
       const vis = await c.call("visualize_data", { path: csv, out_path: html });
       expect(vis.result.content[0].text).toContain(html);
       expect(existsSync(html)).toBe(true);
+    } finally {
+      c.proc.kill();
+    }
+  }, 20000);
+
+  it("confines to DATALOUPE_MCP_ROOT and blocks symlink escape", async () => {
+    // secret/ lives OUTSIDE the root; a symlink inside the root points to it.
+    const base = mkdtempSync(join(tmpdir(), "dataloupe-root-"));
+    const root = join(base, "data");
+    const secretDir = join(base, "secret");
+    mkdirSync(root);
+    mkdirSync(secretDir);
+    const secret = join(secretDir, "secret.csv");
+    writeFileSync(secret, "id,token\n1,hunter2\n");
+    const inside = join(root, "ok.csv");
+    writeFileSync(inside, "id,v\n1,a\n");
+    // A symlink inside the root that resolves outside it.
+    const escape = join(root, "escape.csv");
+    symlinkSync(secret, escape);
+
+    const c = startClient({ DATALOUPE_MCP_ROOT: root });
+    try {
+      await c.rpc("initialize", {
+        protocolVersion: "2024-11-05",
+        capabilities: {},
+        clientInfo: { name: "test", version: "0" },
+      });
+      c.notify("notifications/initialized", {});
+
+      // In-root file is fine.
+      const good = await c.call("describe_data", { path: inside });
+      expect(good.result.content[0].text).toContain('"format": "csv"');
+
+      // Absolute path outside root is denied.
+      const outAbs = await c.call("describe_data", { path: secret });
+      const outText = JSON.stringify(outAbs.result);
+      expect(outText).toMatch(/Access denied|outside the allowed root/);
+
+      // Symlink inside root that points outside is denied (canonicalized).
+      const outLink = await c.call("describe_data", { path: escape });
+      const linkText = JSON.stringify(outLink.result);
+      expect(linkText).toMatch(/Access denied|outside the allowed root/);
+      expect(linkText).not.toContain("hunter2");
     } finally {
       c.proc.kill();
     }

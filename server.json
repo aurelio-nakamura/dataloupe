@@ -3,7 +3,7 @@
   "name": "io.github.aurelio-nakamura/dataloupe",
   "title": "Dataloupe",
   "description": "Offline MCP server to explore CSV/JSON/Parquet/Excel: preview, query, diff, render interactive HTML",
-  "version": "0.11.1",
+  "version": "0.11.2",
   "repository": {
     "url": "https://github.com/aurelio-nakamura/dataloupe",
     "source": "github"
@@ -12,7 +12,7 @@
   "packages": [
     {
       "registryType": "oci",
-      "identifier": "ghcr.io/aurelio-nakamura/dataloupe:0.11.1",
+      "identifier": "ghcr.io/aurelio-nakamura/dataloupe:0.11.2",
       "transport": {
         "type": "stdio"
       },
