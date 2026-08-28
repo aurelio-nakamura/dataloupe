@@ -1,4 +1,4 @@
-import type { Dataset } from "./types.js";
+import type { Dataset, Provenance } from "./types.js";
 import { VIEWER_CSS, VIEWER_JS } from "./generated/viewer-assets.js";
 
 // Injected at build time from package.json via esbuild --define (see build:cli).
@@ -12,6 +12,8 @@ export interface RenderOptions {
   title?: string;
   /** Human-authored note/provenance shown under the header. */
   note?: string;
+  /** Reproducibility metadata (source hash, tool, operations applied). */
+  provenance?: Provenance;
 }
 
 /** Build the single self-contained HTML document for a dataset. */
@@ -33,6 +35,9 @@ export function renderHtml(ds: Dataset, opts: RenderOptions = {}): string {
     version: VERSION,
     ...(opts.title ? { title: opts.title } : {}),
     ...(opts.note ? { note: opts.note } : {}),
+    ...(opts.provenance && Object.keys(opts.provenance).length
+      ? { provenance: opts.provenance }
+      : {}),
   };
 
   // JSON embedded in a script tag: escape "</" so a value can't close the tag.

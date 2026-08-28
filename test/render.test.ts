@@ -145,4 +145,29 @@ describe("renderHtml", () => {
     expect(html).toContain("default-src 'none'");
     expect(html).toContain("connect-src 'none'");
   });
+
+  it("embeds provenance (hash + tool + steps) in the report when provided", async () => {
+    const p = await tmp("prov.csv", "id,city\n1,NYC\n2,LA\n");
+    const html = renderHtml(await buildDataset(p), {
+      provenance: {
+        sha256: "a".repeat(64),
+        sourceBytes: 123,
+        tool: "dataloupe test 9.9.9",
+        steps: ["Load prov.csv", "Filter: city eq \"NYC\""],
+      },
+    });
+    const marker = 'type="application/json">';
+    const start = html.indexOf(marker) + marker.length;
+    const island = JSON.parse(html.slice(start, html.indexOf("</script>", start)));
+    expect(island.provenance.sha256).toBe("a".repeat(64));
+    expect(island.provenance.sourceBytes).toBe(123);
+    expect(island.provenance.tool).toBe("dataloupe test 9.9.9");
+    expect(island.provenance.steps).toEqual(["Load prov.csv", 'Filter: city eq "NYC"']);
+  });
+
+  it("omits provenance when none is supplied", async () => {
+    const p = await tmp("noprov.csv", "id\n1\n");
+    const html = renderHtml(await buildDataset(p));
+    expect(html).not.toContain('"provenance"');
+  });
 });

@@ -34,3 +34,20 @@ export interface Dataset {
   source: string;
   format: string;
 }
+
+/**
+ * Reproducibility metadata embedded in a generated report so a recipient can
+ * verify exactly what produced it: the content hash of the source data, its
+ * size, the tool that generated the report, and the ordered operations applied.
+ * Everything here travels inside the self-contained HTML file.
+ */
+export interface Provenance {
+  /** Lowercase hex SHA-256 of the raw source bytes (data integrity / dedup). */
+  sha256?: string;
+  /** Size of the source in bytes. */
+  sourceBytes?: number;
+  /** Human-readable name of the tool that produced the report. */
+  tool?: string;
+  /** Ordered, human-readable operations applied to produce this report. */
+  steps?: string[];
+}

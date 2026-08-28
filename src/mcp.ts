@@ -25,8 +25,9 @@ import {
   renderDiffHtml,
   VERSION,
 } from "./index.js";
-import type { Row, ColumnStats } from "./types.js";
+import type { Row, ColumnStats, Provenance } from "./types.js";
 import { runQuery, toMarkdown, type QuerySpec } from "./mcp-query.js";
+import { hashFile, describeQuery } from "./provenance.js";
 
 const SUPPORTED = new Set([
   ".csv",
@@ -315,22 +316,37 @@ server.registerTool(
         q.select ||
         q.order_by ||
         q.limit;
+      let prov: Provenance | undefined;
+      try {
+        const { sha256, bytes } = await hashFile(abs);
+        prov = {
+          sha256,
+          sourceBytes: bytes,
+          tool: `dataloupe MCP visualize_data ${VERSION}`,
+          steps: [`Load ${path.basename(abs)}`],
+        };
+      } catch {
+        /* best-effort provenance */
+      }
       let html: string;
       let shape: string;
       if (hasQuery) {
         const ds = await buildDataset(abs);
         const rows = runQuery(ds.rows, q as QuerySpec);
+        if (prov) prov.steps = [...(prov.steps ?? []), ...describeQuery(q as QuerySpec)];
         html = renderHtml(
           datasetFromRows(rows, {
             source: title ?? path.basename(abs),
             format: ds.format,
           }),
+          { provenance: prov },
         );
         shape = `${rows.length} rows (query result)`;
       } else {
         const ds = await buildDataset(abs);
         html = renderHtml(
           title ? { ...ds, source: title } : ds,
+          { provenance: prov },
         );
         shape = `${ds.totalRowCount ?? ds.rowCount} rows × ${ds.columns.length} cols`;
       }

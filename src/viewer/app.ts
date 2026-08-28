@@ -12,11 +12,19 @@ interface Payload {
   stats: ColumnStats[]; rowCount: number; totalRowCount?: number; truncated: boolean;
   source: string; format: string; generatedAt: string; version: string;
   title?: string; note?: string;
+  provenance?: { sha256?: string; sourceBytes?: number; tool?: string; steps?: string[] };
 }
 
 const D = (window as any).__DATALOUPE__ as Payload;
 const $ = (sel: string, el: ParentNode = document) => el.querySelector(sel) as HTMLElement;
 const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c] as string));
+function fmtBytes(n: number): string {
+  if (n < 1024) return `${n} B`;
+  const u = ["KB", "MB", "GB", "TB"];
+  let i = -1, v = n;
+  do { v /= 1024; i++; } while (v >= 1024 && i < u.length - 1);
+  return `${v.toFixed(v < 10 ? 1 : 0)} ${u[i]}`;
+}
 
 const isNum = (t: ColType) => t === "integer" || t === "number";
 const isDate = (t: ColType) => t === "date" || t === "datetime";
@@ -416,6 +424,17 @@ function renderProvenance() {
   html += row("Source", `${esc(D.source.split(/[\\/]/).pop() || D.source)} <span class="prov-dim">(${esc(D.format)})</span>`);
   html += row("Generated", `${fmtGenerated()} <span class="prov-dim">by dataloupe ${esc(D.version)}</span>`);
   html += row("Shape", rowsLine);
+  const p = D.provenance;
+  if (p) {
+    if (p.sha256) {
+      const size = p.sourceBytes != null ? ` <span class="prov-dim">(${fmtBytes(p.sourceBytes)})</span>` : "";
+      html += row("Source SHA-256", `<code class="prov-hash" title="SHA-256 of the source data">${esc(p.sha256)}</code>${size}`);
+    }
+    if (p.steps && p.steps.length) {
+      const items = p.steps.map((s) => `<li>${esc(s)}</li>`).join("");
+      html += `<div class="prov-row prov-steps"><dt>How produced</dt><dd><ol class="prov-oplist">${items}</ol>${p.tool ? `<div class="prov-dim prov-tool">via ${esc(p.tool)}</div>` : ""}</dd></div>`;
+    }
+  }
   html += `<div class="prov-view"><dt>Current view</dt><dd>${viewSentence()}</dd></div>`;
   b.innerHTML =
     `<dl class="prov-dl">${html}</dl>` +

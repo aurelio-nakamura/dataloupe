@@ -2,6 +2,8 @@ import { writeFile } from "node:fs/promises";
 import { basename, extname, resolve } from "node:path";
 import { buildDataset, buildDatasetFromText } from "./dataset.js";
 import { renderHtml, VERSION } from "./render.js";
+import { hashFile, hashString } from "./provenance.js";
+import type { Provenance } from "./types.js";
 import { diffDatasets } from "./diff-core.js";
 import { renderDiffHtml } from "./diff-render.js";
 import type { Format } from "./parse.js";
@@ -310,7 +312,21 @@ async function main() {
       process.stderr.write(`dataloupe: failed to read stdin: ${(err as Error).message}\n`);
       process.exit(1);
     }
-    const html = renderHtml(ds, { title: args.title, note: args.note });
+    const { sha256, bytes } = hashString(text);
+    const stdinProv: Provenance = {
+      sha256,
+      sourceBytes: bytes,
+      tool: `dataloupe CLI ${VERSION}`,
+      steps: [
+        `Read ${format.toUpperCase()} from stdin`,
+        ...(args.limit ? [`Limit ${args.limit} rows`] : []),
+      ],
+    };
+    const html = renderHtml(ds, {
+      title: args.title,
+      note: args.note,
+      provenance: stdinProv,
+    });
     await writeFile(output, html, "utf8");
     const ms = Date.now() - t0;
     const size = Buffer.byteLength(html, "utf8");
@@ -342,7 +358,28 @@ async function main() {
     process.exit(1);
   }
 
-  const html = renderHtml(ds, { title: args.title, note: args.note });
+  let fileProv: Provenance | undefined;
+  try {
+    const { sha256, bytes } = await hashFile(input);
+    fileProv = {
+      sha256,
+      sourceBytes: bytes,
+      tool: `dataloupe CLI ${VERSION}`,
+      steps: [
+        `Load ${ds.format} file ${basename(input)}`,
+        ...(args.sheet ? [`Sheet: ${args.sheet}`] : []),
+        ...(args.limit ? [`Limit ${args.limit} rows`] : []),
+      ],
+    };
+  } catch {
+    /* hashing is best-effort; never block report generation on it */
+  }
+
+  const html = renderHtml(ds, {
+    title: args.title,
+    note: args.note,
+    provenance: fileProv,
+  });
   await writeFile(output, html, "utf8");
 
   const ms = Date.now() - t0;

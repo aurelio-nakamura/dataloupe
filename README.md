@@ -96,7 +96,12 @@ npx dataloupe q1.csv --title "Q1 Expenses" --note "Exported from ledger; nulls d
 
 The generated file already embeds inspectable provenance — source filename,
 format, generation time, dataloupe version, row count, and each column's inferred
-type and stats — so a recipient can always tell *what* they're looking at.
+type and stats — so a recipient can always tell *what* they're looking at. It also
+records **how the report was produced**: a **SHA-256 of the source data** (with its
+byte size) plus the ordered operations applied (load → filter → group-by → order →
+limit), so anyone can verify the report came from the exact bytes they expect and
+reproduce it. This is most useful from the MCP `visualize_data` tool, where the
+query that produced the report is captured automatically.
 `--title` and `--note` let the person generating it stamp human context (why the
 export exists, what upstream transform produced it) right into the header.
 

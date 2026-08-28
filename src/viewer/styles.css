@@ -164,6 +164,10 @@ button.iconbtn.on { border-color: var(--accent); color: var(--accent); backgroun
 .prov-dl dt { color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em; padding-top: 1px; }
 .prov-dl dd { margin: 0; word-break: break-word; }
 .prov-dim { color: var(--muted); }
+.prov-row dd .prov-hash { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 11px; word-break: break-all; }
+.prov-oplist { margin: 0; padding-left: 18px; }
+.prov-oplist li { margin: 1px 0; }
+.prov-tool { margin-top: 4px; font-size: 11px; }
 .prov-actions { display: flex; align-items: center; gap: 10px; margin-top: 12px; }
 .prov-copy {
   background: var(--accent); color: #fff; border: 1px solid var(--accent);
