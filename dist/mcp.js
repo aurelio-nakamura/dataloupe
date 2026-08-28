@@ -36695,6 +36695,23 @@ function canonicalize(p) {
   }
 }
 var ROOT = process.env.DATALOUPE_MCP_ROOT ? canonicalize(process.env.DATALOUPE_MCP_ROOT) : null;
+function parseMaxBytes() {
+  const raw = process.env.DATALOUPE_MCP_MAX_BYTES;
+  if (raw === void 0 || raw === "") return 512 * 1024 * 1024;
+  const n = Number(raw);
+  if (!Number.isFinite(n) || n < 0) return 512 * 1024 * 1024;
+  return Math.floor(n);
+}
+var MAX_BYTES = parseMaxBytes();
+var READONLY = /^(1|true|yes|on)$/i.test(
+  process.env.DATALOUPE_MCP_READONLY ?? ""
+);
+function fmtBytes(n) {
+  if (n >= 1024 * 1024 * 1024) return `${(n / 1024 / 1024 / 1024).toFixed(1)} GiB`;
+  if (n >= 1024 * 1024) return `${(n / 1024 / 1024).toFixed(1)} MiB`;
+  if (n >= 1024) return `${(n / 1024).toFixed(1)} KiB`;
+  return `${n} B`;
+}
 function resolveSafe(p) {
   const abs = canonicalize(p);
   if (ROOT && !(abs === ROOT || abs.startsWith(ROOT + path.sep))) {
@@ -36703,6 +36720,30 @@ function resolveSafe(p) {
     );
   }
   return abs;
+}
+async function resolveInput(p) {
+  const abs = resolveSafe(p);
+  if (MAX_BYTES > 0) {
+    try {
+      const st = await fs2.stat(abs);
+      if (st.isFile() && st.size > MAX_BYTES) {
+        throw new Error(
+          `File too large: '${abs}' is ${fmtBytes(st.size)}, which exceeds the ${fmtBytes(MAX_BYTES)} limit. Raise DATALOUPE_MCP_MAX_BYTES (or set it to 0 to disable), or narrow the request with query_data (where/limit).`
+        );
+      }
+    } catch (e) {
+      if (e instanceof Error && e.message.startsWith("File too large")) throw e;
+    }
+  }
+  return abs;
+}
+function resolveWrite(p) {
+  if (READONLY) {
+    throw new Error(
+      "Read-only mode: writing to a caller-specified out_path is disabled (DATALOUPE_MCP_READONLY). Omit out_path to receive the artifact as a temp file."
+    );
+  }
+  return resolveSafe(p);
 }
 function ok(text) {
   return { content: [{ type: "text", text }] };
@@ -36731,7 +36772,7 @@ function round2(n) {
   return Math.round(n * 1e3) / 1e3;
 }
 async function outPath(explicit, hint) {
-  if (explicit) return resolveSafe(explicit);
+  if (explicit) return resolveWrite(explicit);
   const dir = await fs2.mkdtemp(path.join(os.tmpdir(), "dataloupe-"));
   return path.join(dir, hint);
 }
@@ -36806,7 +36847,7 @@ server.registerTool(
   },
   async ({ path: p, limit }) => {
     try {
-      const abs = resolveSafe(p);
+      const abs = await resolveInput(p);
       const ds = await buildDataset(abs, limit ? { limit } : {});
       const summary = {
         source: ds.source,
@@ -36837,7 +36878,7 @@ server.registerTool(
   },
   async ({ path: p, limit, offset }) => {
     try {
-      const abs = resolveSafe(p);
+      const abs = await resolveInput(p);
       const n = limit ?? 20;
       const ds = await buildDataset(abs, { limit: (offset ?? 0) + n });
       const rows = ds.rows.slice(offset ?? 0, (offset ?? 0) + n);
@@ -36864,7 +36905,7 @@ server.registerTool(
   },
   async ({ path: p, ...q }) => {
     try {
-      const abs = resolveSafe(p);
+      const abs = await resolveInput(p);
       const ds = await buildDataset(abs);
       const rows = runQuery(ds.rows, q);
       const cols = rows.length ? Object.keys(rows[0]) : ds.columns;
@@ -36891,7 +36932,7 @@ server.registerTool(
   },
   async ({ path: p, out_path, title, ...q }) => {
     try {
-      const abs = resolveSafe(p);
+      const abs = await resolveInput(p);
       const hasQuery = q.where && q.where.length || q.group_by || q.select || q.order_by || q.limit;
       let prov;
       try {
@@ -36955,13 +36996,13 @@ server.registerTool(
   },
   async ({ before, after, key, out_path }) => {
     try {
-      const b = await buildDataset(resolveSafe(before));
-      const a = await buildDataset(resolveSafe(after));
+      const b = await buildDataset(await resolveInput(before));
+      const a = await buildDataset(await resolveInput(after));
       const result = diffDatasets(b, a, key && key.length ? { key } : {});
       let extra = "";
       if (out_path) {
         const html = renderDiffHtml(result);
-        const dest = resolveSafe(out_path);
+        const dest = resolveWrite(out_path);
         await fs2.writeFile(dest, html, "utf8");
         extra = `
 

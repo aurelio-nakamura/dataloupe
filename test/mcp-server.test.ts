@@ -145,4 +145,62 @@ describe("dataloupe MCP server (stdio)", () => {
       c.proc.kill();
     }
   }, 20000);
+  it("enforces the per-file size cap (DATALOUPE_MCP_MAX_BYTES)", async () => {
+    const dir = mkdtempSync(join(tmpdir(), "dataloupe-cap-"));
+    const csv = join(dir, "big.csv");
+    // ~2 KiB of CSV, cap set to 100 bytes -> must be refused before loading.
+    let body = "id,v\n";
+    for (let i = 0; i < 200; i++) body += `${i},row-${i}\n`;
+    writeFileSync(csv, body);
+
+    const c = startClient({ DATALOUPE_MCP_MAX_BYTES: "100" });
+    try {
+      await c.rpc("initialize", {
+        protocolVersion: "2024-11-05",
+        capabilities: {},
+        clientInfo: { name: "test", version: "0" },
+      });
+      c.notify("notifications/initialized", {});
+
+      const res = await c.call("describe_data", { path: csv });
+      const text = JSON.stringify(res.result);
+      expect(text).toMatch(/File too large|exceeds the/);
+      // No dataset content leaked through.
+      expect(text).not.toContain('"format": "csv"');
+    } finally {
+      c.proc.kill();
+    }
+  }, 20000);
+
+  it("read-only mode refuses caller-specified out_path but still returns an artifact", async () => {
+    const dir = mkdtempSync(join(tmpdir(), "dataloupe-ro-"));
+    const csv = join(dir, "s.csv");
+    writeFileSync(csv, "id,v\n1,a\n2,b\n");
+    const target = join(dir, "should-not-be-written.html");
+
+    const c = startClient({ DATALOUPE_MCP_READONLY: "1" });
+    try {
+      await c.rpc("initialize", {
+        protocolVersion: "2024-11-05",
+        capabilities: {},
+        clientInfo: { name: "test", version: "0" },
+      });
+      c.notify("notifications/initialized", {});
+
+      // Explicit out_path is denied and the named file is never created.
+      const denied = await c.call("visualize_data", { path: csv, out_path: target });
+      expect(JSON.stringify(denied.result)).toMatch(/Read-only mode/);
+      expect(existsSync(target)).toBe(false);
+
+      // Without out_path the artifact is still produced (in a temp file).
+      const okRes = await c.call("visualize_data", { path: csv });
+      const outText = okRes.result.content[0].text;
+      expect(outText).toContain(".html");
+      const m = outText.match(/(\/[^\s]+\.html)/);
+      expect(m).toBeTruthy();
+      expect(existsSync(m![1])).toBe(true);
+    } finally {
+      c.proc.kill();
+    }
+  }, 20000);
 });

@@ -287,7 +287,17 @@ Add it to an MCP client (example for Claude Desktop / Cursor `mcpServers` config
 ```
 
 `DATALOUPE_MCP_ROOT` is optional but recommended: it confines all file access to that
-directory. Tools exposed:
+directory (symlink-escape–safe: paths are canonicalized before the check). Two more
+optional safety knobs:
+
+- `DATALOUPE_MCP_MAX_BYTES` — per-file read cap in bytes (default **512 MiB**). A file
+  larger than this is refused *before* it is loaded, so one request can't exhaust memory.
+  Set to `0` to disable.
+- `DATALOUPE_MCP_READONLY` — when set to `1`/`true`, the server refuses to write an
+  artifact to a caller-specified `out_path` (which could overwrite an arbitrary file);
+  `visualize_data` / `diff_data` still return an artifact, but only in a fresh temp file.
+
+Tools exposed:
 
 | Tool | What it does |
 | --- | --- |
