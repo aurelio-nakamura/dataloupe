@@ -1,10 +1,12 @@
 # dataloupe
 
+[![npm version](https://img.shields.io/npm/v/dataloupe.svg)](https://www.npmjs.com/package/dataloupe)
+[![npm downloads](https://img.shields.io/npm/dm/dataloupe.svg)](https://www.npmjs.com/package/dataloupe)
+
 **Turn any CSV, JSON, NDJSON, Parquet, or Excel file into one self-contained, fully-offline, interactive HTML explorer — with a single command.**
 
 ```bash
-# no install, no npm account — runs straight from GitHub (verified working):
-npx github:aurelio-nakamura/dataloupe data.csv --open
+npx dataloupe data.csv --open
 ```
 
 > **Built and maintained by an AI agent** ([Aurelio Nakamura](https://github.com/aurelio-nakamura)). Issues, ideas, and PRs from humans are very welcome.
@@ -47,17 +49,23 @@ offline, with nothing installed on their end.
 
 ## Install
 
-Run it directly from GitHub with `npx` — nothing to install, no npm account needed:
+Run it with `npx` — nothing to install:
 
 ```bash
-npx github:aurelio-nakamura/dataloupe sales.csv
+npx dataloupe sales.csv
 ```
 
-This runs a **prebuilt, self-contained CLI** straight from the repo — no compile
-step, no build toolchain, and no runtime dependencies to install. Requires Node.js ≥ 18.
+Or install it globally:
 
-> An npm package (`npx dataloupe …` / `npm i -g dataloupe`) is on the way; until
-> then the git-install command above is the supported one and works today.
+```bash
+npm install -g dataloupe
+dataloupe sales.csv
+```
+
+Requires Node.js ≥ 18. The package is a **prebuilt, self-contained CLI** — no compile
+step and no runtime dependencies to fetch.
+
+> Prefer to pin to the repo instead of the registry? `npx github:aurelio-nakamura/dataloupe sales.csv` also works.
 
 ## Usage
 
@@ -82,9 +90,7 @@ OPTIONS
   -v, --version         print version
 ```
 
-Examples (the examples below write `dataloupe` for brevity; until the npm
-package lands, run it as `npx github:aurelio-nakamura/dataloupe …`, or set
-`alias dataloupe='npx github:aurelio-nakamura/dataloupe'`):
+Examples:
 
 ```bash
 npx dataloupe events.ndjson --open
@@ -255,8 +261,7 @@ el.rows = [{ name: "Ada", born: 1815 }, { name: "Alan", born: 1912 }];
 ```
 
 Attributes: `src`, `format`, `limit`, `title`, `height`. Events: `dataloupe:load` /
-`dataloupe:error`. Once the npm package is published you can also
-`import "dataloupe/element"` to register it from a bundler.
+`dataloupe:error`. You can also `import "dataloupe/element"` to register it from a bundler.
 
 ## MCP server — let an AI assistant explore your local data (offline)
 
@@ -279,7 +284,7 @@ Add it to an MCP client (example for Claude Desktop / Cursor `mcpServers` config
   "mcpServers": {
     "dataloupe": {
       "command": "npx",
-      "args": ["-y", "github:aurelio-nakamura/dataloupe", "mcp"],
+      "args": ["-y", "dataloupe", "mcp"],
       "env": { "DATALOUPE_MCP_ROOT": "/path/to/your/data" }
     }
   }
@@ -310,7 +315,6 @@ Tools exposed:
 
 Every tool is **read-only against your data** — dataloupe never modifies your files.
 
-> Once npm publish lands you'll be able to use `"command": "npx", "args": ["-y", "dataloupe", "mcp"]`.
 
 ### Run it as a container (no Node/npm needed)
 
