@@ -19,9 +19,9 @@ npx dataloupe data.csv --open
 
 `dataloupe` reads your data file and writes a single `.html` next to it. Open it by
 double-click, email it, drop it in Slack, or commit it to a repo. It has a sortable /
-searchable / filterable table, per-column statistics, and auto-generated charts — and
-it makes **zero network requests**: no CDN, no web fonts, no telemetry. **Your data
-never leaves your machine.**
+searchable / filterable table, per-column statistics, auto-generated charts, and a
+built-in **SQL console that runs entirely in the file** — and it makes **zero network
+requests**: no CDN, no web fonts, no telemetry. **Your data never leaves your machine.**
 
 This isn't just a promise — every generated file ships a strict
 [Content-Security-Policy](https://developer.mozilla.org/docs/Web/HTTP/CSP) meta tag
@@ -345,6 +345,7 @@ directory you mount at `/data`.
 - **Per-column statistics.** Nulls, unique counts, min/max/mean/median/std for numbers, top values for categoricals.
 - **Auto charts.** Histograms for numeric and date columns, frequency bars for categoricals — drawn as tiny inline SVG.
 - **Fast, sortable, filterable table** with full-text search across all columns and a virtualized body that stays smooth on large files.
+- **Built-in SQL console.** Press **▸_ SQL** in the viewer and run real `SELECT` queries — `WHERE`, `AND`, `LIKE`, `IN`, `GROUP BY`, aggregates (`COUNT`/`SUM`/`AVG`/`MIN`/`MAX`), `ORDER BY`, `LIMIT`/`OFFSET` — against your data. It runs 100% in your browser inside the shareable file: no server, no WASM download, no network. Nobody else's single-file export does this.
 - **Shareable views.** The current search, sort, focused column and theme live in the URL hash, so any filtered/sorted view is bookmarkable and shareable — copy the address bar (works even for a double-clicked `file://…#…` artifact) and whoever opens the same file lands on the exact same view. Still 100% offline; the hash never triggers a request.
 - **Provenance panel.** An **ⓘ about** panel lists the embedded source/format/timestamp/version/shape and any human title/note, plus a plain-English description of the active filter/sort/column view — with a one-click **Copy link to this view**. Everything is already inside the file.
 - **`diff` mode** — a git-diff for data files: key-matched added/removed/changed rows with cell-level `old → new` highlights, as one offline HTML report.

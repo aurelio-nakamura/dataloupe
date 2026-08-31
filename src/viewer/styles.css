@@ -176,3 +176,46 @@ button.iconbtn.on { border-color: var(--accent); color: var(--accent); backgroun
 .prov-copy:hover { filter: brightness(1.05); }
 .prov-copied { color: var(--muted); font-size: 12px; }
 .prov-foot { color: var(--muted); font-size: 11.5px; margin: 11px 0 2px; }
+
+/* SQL panel — an in-file, offline query console */
+button.iconbtn.active { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
+.sql-panel {
+  border-bottom: 1px solid var(--border); background: var(--panel);
+  max-height: 55vh; overflow: auto; box-shadow: var(--shadow);
+}
+.sql-head {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 9px 16px; border-bottom: 1px solid var(--border);
+}
+.sql-title { font-weight: 600; font-size: 13px; }
+.sql-sub { color: var(--muted); font-weight: 400; }
+.sql-editor { display: flex; gap: 10px; padding: 12px 16px; align-items: stretch; }
+.sql-editor textarea {
+  flex: 1; min-height: 58px; resize: vertical; font-family: var(--mono); font-size: 13px;
+  line-height: 1.5; color: var(--text); background: var(--panel-2);
+  border: 1px solid var(--border); border-radius: 8px; padding: 9px 11px; outline: none;
+}
+.sql-editor textarea:focus { border-color: var(--accent); }
+.sql-actions { display: flex; flex-direction: column; align-items: center; gap: 6px; justify-content: center; }
+.sql-run {
+  background: var(--accent); color: #fff; border: none; border-radius: 8px;
+  padding: 9px 18px; font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap;
+}
+.sql-run:hover { filter: brightness(1.06); }
+.sql-hint { color: var(--muted); font-size: 11px; }
+.sql-msg { margin: 0 16px 12px; font-size: 12.5px; font-family: var(--mono); }
+.sql-msg.err { color: #c0392b; }
+[data-theme="dark"] .sql-msg.err { color: #ff7b72; }
+.sql-results { padding: 0 16px 14px; }
+.sql-rescount { color: var(--muted); font-size: 12px; margin-bottom: 6px; }
+.sql-restable { overflow: auto; border: 1px solid var(--border); border-radius: 8px; }
+table.sql-table { border-collapse: collapse; width: 100%; font-size: 12.5px; }
+table.sql-table th, table.sql-table td {
+  text-align: left; padding: 5px 10px; border-bottom: 1px solid var(--border); white-space: nowrap;
+}
+table.sql-table th {
+  position: sticky; top: 0; background: var(--panel-2); color: var(--muted);
+  font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em;
+}
+table.sql-table td .null { color: var(--null); }
+table.sql-table tbody tr:hover { background: var(--accent-soft); }

@@ -1,4 +1,7 @@
 // dataloupe viewer — vanilla TS, no runtime deps. Runs fully offline.
+import { parseSql } from "../sql.js";
+import { runQuery } from "../mcp-query.js";
+import type { Row } from "../types.js";
 type ColType = "integer" | "number" | "boolean" | "date" | "datetime" | "string";
 interface ColumnStats {
   name: string; type: ColType; count: number; nulls: number; unique: number; uniqueApprox: boolean;
@@ -282,6 +285,84 @@ function renderDetail(i: number) {
   d.classList.add("show");
 }
 
+// ---- SQL panel ----
+// A real SQL query engine embedded in the shareable file itself. The parser
+// (src/sql.ts) compiles a SELECT into a plan run by the same read-only engine
+// the CLI/MCP server use (src/mcp-query.ts). Zero network, zero eval.
+let sqlOpen = false;
+let objectRows: Row[] | null = null;
+
+// D.rows is column-indexed arrays; the query engine wants name-keyed objects.
+function rowsAsObjects(): Row[] {
+  if (objectRows) return objectRows;
+  const cols = D.columns;
+  objectRows = D.rows.map((arr) => {
+    const o: Row = {};
+    for (let c = 0; c < cols.length; c++) o[cols[c]] = arr[c];
+    return o;
+  });
+  return objectRows;
+}
+
+function toggleSql(force?: boolean) {
+  sqlOpen = force === undefined ? !sqlOpen : force;
+  const panel = $("#sql");
+  panel.hidden = !sqlOpen;
+  const btn = $("#sqlbtn");
+  btn.classList.toggle("active", sqlOpen);
+  if (sqlOpen) {
+    if (provOpen) toggleProv(false);
+    const ta = $("#sql-input") as HTMLTextAreaElement;
+    ta.focus();
+    if (!ta.value.trim()) ta.value = `SELECT * FROM data LIMIT 100`;
+  }
+}
+
+function fmtResultCell(col: string, v: unknown): string {
+  if (v === null || v === undefined) return `<span class="null">∅</span>`;
+  const t = D.types[col];
+  if (typeof v === "number" && (t === "date" || t === "datetime")) return esc(fmtDateVal(v, t));
+  if (typeof v === "number") return esc(fmtNum(v));
+  return esc(String(v));
+}
+
+function runSql() {
+  const ta = $("#sql-input") as HTMLTextAreaElement;
+  const msg = $("#sql-msg");
+  const results = $("#sql-results");
+  const sql = ta.value.trim();
+  const compiled = parseSql(sql, D.columns);
+  if (compiled.error || !compiled.spec) {
+    msg.hidden = false;
+    msg.className = "sql-msg err";
+    msg.textContent = "✗ " + (compiled.error || "Could not parse query");
+    results.hidden = true;
+    return;
+  }
+  msg.hidden = true;
+  const cap = 5000;
+  let out: Row[];
+  try {
+    out = runQuery(rowsAsObjects(), compiled.spec, cap);
+  } catch (e) {
+    msg.hidden = false;
+    msg.className = "sql-msg err";
+    msg.textContent = "✗ " + (e instanceof Error ? e.message : String(e));
+    results.hidden = true;
+    return;
+  }
+  const cols = compiled.columns && compiled.columns.length ? compiled.columns : D.columns;
+  const head = `<tr>${cols.map((c) => `<th>${esc(c)}</th>`).join("")}</tr>`;
+  const body = out
+    .map((r) => `<tr>${cols.map((c) => `<td>${fmtResultCell(c, (r as any)[c])}</td>`).join("")}</tr>`)
+    .join("");
+  $("#sql-restable").innerHTML = `<table class="sql-table"><thead>${head}</thead><tbody>${body}</tbody></table>`;
+  const capped = out.length >= cap;
+  $("#sql-rescount").textContent =
+    `${out.length.toLocaleString()} row${out.length === 1 ? "" : "s"}${capped ? ` (capped at ${cap.toLocaleString()})` : ""}`;
+  results.hidden = false;
+}
+
 function init() {
   const fileName = D.source.split(/[\\/]/).pop() || D.source;
   const headline = D.title || fileName;
@@ -310,10 +391,29 @@ function init() {
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
         <input id="q" type="search" placeholder="Search all columns…" autocomplete="off">
       </span>
+      <button class="iconbtn" id="sqlbtn" title="Run SQL against this data (offline)">▸_ SQL</button>
       <button class="iconbtn" id="about" title="About this file & current view">ⓘ about</button>
       <button class="iconbtn" id="theme">◐ theme</button>
     </header>
     ${noteBar}
+    <div class="sql-panel" id="sql" hidden>
+      <div class="sql-head">
+        <span class="sql-title">SQL <span class="sql-sub">— runs 100% in your browser, no server</span></span>
+        <button class="prov-close" id="sql-close" title="Close">✕</button>
+      </div>
+      <div class="sql-editor">
+        <textarea id="sql-input" spellcheck="false" autocomplete="off" placeholder="SELECT * FROM data LIMIT 100"></textarea>
+        <div class="sql-actions">
+          <button class="sql-run" id="sql-run" title="Run (Ctrl/Cmd+Enter)">Run ▸</button>
+          <span class="sql-hint">Ctrl/⌘+Enter</span>
+        </div>
+      </div>
+      <div class="sql-msg" id="sql-msg" hidden></div>
+      <div class="sql-results" id="sql-results" hidden>
+        <div class="sql-rescount" id="sql-rescount"></div>
+        <div class="sql-restable" id="sql-restable"></div>
+      </div>
+    </div>
     <div class="prov-panel" id="prov" hidden>
       <div class="prov-head"><span>About this file</span><button class="prov-close" id="prov-close" title="Close">✕</button></div>
       <div class="prov-body" id="prov-body"></div>
@@ -362,7 +462,16 @@ function init() {
   $("#theme").addEventListener("click", toggleTheme);
   $("#about").addEventListener("click", () => toggleProv());
   $("#prov-close").addEventListener("click", () => toggleProv(false));
-  document.addEventListener("keydown", (e) => { if (e.key === "Escape" && provOpen) toggleProv(false); });
+  $("#sqlbtn").addEventListener("click", () => toggleSql());
+  $("#sql-close").addEventListener("click", () => toggleSql(false));
+  $("#sql-run").addEventListener("click", () => runSql());
+  ($("#sql-input") as HTMLTextAreaElement).addEventListener("keydown", (e) => {
+    if ((e.ctrlKey || e.metaKey) && e.key === "Enter") { e.preventDefault(); runSql(); }
+  });
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && provOpen) toggleProv(false);
+    if (e.key === "Escape" && sqlOpen) toggleSql(false);
+  });
   applyInitialTheme();
   if (activeCol >= 0) setActive(activeCol); // reopen a restored column detail
 
