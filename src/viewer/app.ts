@@ -408,6 +408,13 @@ function init() {
           <span class="sql-hint">Ctrl/⌘+Enter</span>
         </div>
       </div>
+      <div class="sql-grammar">
+        <span class="sql-gram-label">Supported:</span>
+        <code>SELECT</code> · <code>WHERE</code> (<code>AND</code>, <code>LIKE</code>, <code>IN</code>) ·
+        <code>GROUP BY</code> · <code>COUNT/SUM/AVG/MIN/MAX</code> · <code>ORDER BY</code> ·
+        <code>LIMIT</code>/<code>OFFSET</code> · aliases.
+        <span class="sql-gram-note">Single table <code>data</code>; no joins or subqueries.</span>
+      </div>
       <div class="sql-msg" id="sql-msg" hidden></div>
       <div class="sql-results" id="sql-results" hidden>
         <div class="sql-rescount" id="sql-rescount"></div>

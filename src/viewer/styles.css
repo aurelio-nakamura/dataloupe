@@ -203,6 +203,10 @@ button.iconbtn.active { border-color: var(--accent); color: var(--accent); backg
 }
 .sql-run:hover { filter: brightness(1.06); }
 .sql-hint { color: var(--muted); font-size: 11px; }
+.sql-grammar { margin: -4px 16px 10px; font-size: 11.5px; color: var(--muted); line-height: 1.7; }
+.sql-grammar code { font-family: var(--mono); font-size: 11px; background: var(--panel-2); border: 1px solid var(--border); border-radius: 4px; padding: 0 4px; color: var(--text); }
+.sql-gram-label { font-weight: 600; color: var(--text); margin-right: 2px; }
+.sql-gram-note { display: block; margin-top: 3px; opacity: 0.85; }
 .sql-msg { margin: 0 16px 12px; font-size: 12.5px; font-family: var(--mono); }
 .sql-msg.err { color: #c0392b; }
 [data-theme="dark"] .sql-msg.err { color: #ff7b72; }

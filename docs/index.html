@@ -64,7 +64,8 @@
     <p class="tag">Turn any data file into one self-contained, interactive HTML explorer.</p>
     <p class="sub">Point it at a CSV, TSV, JSON, NDJSON, Parquet, or Excel file and get a single
     <code>.html</code> you can double-click, email, or commit — a sortable, filterable, searchable
-    table with per-column stats and auto charts. It runs <strong>100% locally</strong>: your data
+    table with per-column stats and auto charts, plus a <strong>built-in SQL console that runs
+    right inside the file</strong>. It runs <strong>100% locally</strong>: your data
     never leaves your machine, and the output makes <strong>zero network requests</strong>.</p>
   </header>
 
@@ -76,17 +77,27 @@
   </div>
   <p class="note">The playground runs the same engine as the CLI, entirely in your browser — your file is never uploaded.</p>
 
+  <div class="card" style="border-color:var(--accent);background:linear-gradient(180deg,rgba(120,170,255,.06),transparent)">
+    <h3>🆕 Write SQL, right inside the file</h3>
+    <p>Every generated report ships a real <strong>SQL console</strong> —
+    <code>SELECT … WHERE … GROUP BY … ORDER BY … LIMIT</code> with aggregates run
+    <strong>100% client-side, offline, no server and no WASM</strong>. Open the
+    <a href="./demo/penguins.html#">explorer demo</a> and hit the <strong>“▸ SQL”</strong> panel to try it.
+    No other single-file data export lets you query the data <em>inside</em> the shareable HTML.</p>
+  </div>
+
   <h2>Or run it locally</h2>
-  <div class="cmd"><span class="p">$</span> npx github:aurelio-nakamura/dataloupe data.csv <span class="p">-o report.html</span></div>
+  <div class="cmd"><span class="p">$</span> npx dataloupe data.csv <span class="p">-o report.html</span></div>
   <div class="cmd"><span class="p"># git-diff for data files: what actually changed between two versions</span>
-<span class="p">$</span> npx github:aurelio-nakamura/dataloupe diff old.csv new.csv --key id <span class="p">-o diff.html</span></div>
-  <p class="note">No install, no server, no account. Reads from stdin too: <code>cat data.csv | npx github:aurelio-nakamura/dataloupe -</code></p>
+<span class="p">$</span> npx dataloupe diff old.csv new.csv --key id <span class="p">-o diff.html</span></div>
+  <p class="note">No install, no server, no account. Reads from stdin too: <code>cat data.csv | npx dataloupe -</code></p>
 
   <h2>What you get</h2>
   <div class="grid">
     <div class="card"><h3>One portable file</h3><p>A single self-contained <code>.html</code> — no server, no build step. Share it, archive it, or open it offline years from now.</p></div>
     <div class="card"><h3>Truly private</h3><p>Everything runs on your machine. The generated report has zero external requests — verified by a test in the repo.</p></div>
     <div class="card"><h3>Table + stats + charts</h3><p>Virtualized sortable/filterable table for large files, per-column type inference and summary stats, and automatic charts.</p></div>
+    <div class="card"><h3>Built-in SQL console</h3><p>Query the data <em>inside</em> the file: <code>SELECT / WHERE / GROUP BY / ORDER BY / LIMIT</code> with aggregates, all client-side and offline — no server, no WASM.</p></div>
     <div class="card"><h3>Reads what you have</h3><p>CSV, TSV, JSON, NDJSON, Parquet, and Excel (.xlsx) — pure-JS parsing, no native dependencies to install.</p></div>
     <div class="card"><h3>diff for data</h3><p>Key-matched added / removed / changed rows with cell-level old→new highlights, as one offline HTML report.</p></div>
     <div class="card"><h3>CLI + library + Action</h3><p>Use it from the terminal, import it programmatically, or drop the GitHub Action into a PR to review data changes in CI.</p></div>
