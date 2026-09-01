@@ -36229,7 +36229,7 @@ var VIEWER_JS = '"use strict";(()=>{var ne=new Set(["select","from","where","gro
 var VIEWER_CSS = ':root{--bg:#f7f8fa;--panel:#ffffff;--panel-2:#f0f2f5;--border:#e2e6ec;--text:#1a1f29;--muted:#6b7484;--accent:#3b6ef5;--accent-soft:#e5edff;--num:#0a7d5a;--bar:#3b6ef5;--bar-soft:#c9d8ff;--null:#c7ccd6;--shadow:0 1px 3px rgba(20,30,50,0.08),0 1px 2px rgba(20,30,50,0.06);--mono:ui-monospace,"SF Mono","Cascadia Code","Roboto Mono",Menlo,Consolas,monospace;--sans:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}[data-theme="dark"]{--bg:#0e1116;--panel:#161b22;--panel-2:#1c232d;--border:#2a323d;--text:#e6edf3;--muted:#8b95a5;--accent:#5a8bff;--accent-soft:#1b2a4d;--num:#46c99a;--bar:#5a8bff;--bar-soft:#24365f;--null:#3a424e;--shadow:0 1px 3px rgba(0,0,0,0.4)}*{box-sizing:border-box}html,body{height:100%}body{margin:0;font-family:var(--sans);background:var(--bg);color:var(--text);font-size:14px;line-height:1.45;-webkit-font-smoothing:antialiased}.app{display:flex;flex-direction:column;height:100vh}header.topbar{display:flex;align-items:center;gap:16px;padding:10px 18px;background:var(--panel);border-bottom:1px solid var(--border);flex:0 0 auto}.brand{font-weight:700;letter-spacing:-0.02em;display:flex;align-items:center;gap:8px}.brand .logo{color:var(--accent)}.meta{color:var(--muted);font-size:12.5px;display:flex;gap:14px;flex-wrap:wrap}.meta b{color:var(--text);font-weight:600}.spacer{flex:1}.search{display:flex;align-items:center;gap:8px;background:var(--panel-2);border:1px solid var(--border);border-radius:8px;padding:6px 10px;min-width:240px}.search input{border:none;background:transparent;color:var(--text);outline:none;width:100%;font-size:13px}.search svg{color:var(--muted);flex:0 0 auto}button.iconbtn{background:var(--panel-2);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:6px 10px;cursor:pointer;font-size:13px}button.iconbtn:hover{border-color:var(--accent)}.trunc-note{color:#b26a00;font-size:12px}[data-theme="dark"] .trunc-note{color:#e0a95e}.src-sub{color:var(--muted);font-size:12px;opacity:0.85}.note-bar{display:flex;align-items:flex-start;gap:8px;padding:8px 16px;background:var(--note-bg,#fff8e1);border-bottom:1px solid var(--border);color:var(--text);font-size:13px;line-height:1.45}.note-bar .note-ico{color:var(--muted);flex:none}.note-bar .note-txt{white-space:pre-wrap;word-break:break-word}[data-theme="dark"] .note-bar{--note-bg:#2a2410}.body{display:flex;flex:1;min-height:0}aside.sidebar{flex:0 0 320px;overflow-y:auto;border-right:1px solid var(--border);background:var(--panel);padding:12px}aside.sidebar h2{font-size:11px;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);margin:4px 6px 10px}.col-card{border:1px solid var(--border);border-radius:10px;padding:10px 11px;margin-bottom:9px;background:var(--panel);cursor:pointer;transition:border-color .12s,box-shadow .12s}.col-card:hover{border-color:var(--accent);box-shadow:var(--shadow)}.col-card.active{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent-soft)}.col-head{display:flex;align-items:center;justify-content:space-between;gap:8px}.col-name{font-weight:600;font-family:var(--mono);font-size:12.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.type-badge{font-size:10.5px;font-weight:600;padding:1px 7px;border-radius:999px;background:var(--panel-2);color:var(--muted);border:1px solid var(--border);flex:0 0 auto}.type-badge.num,.type-badge.integer,.type-badge.number{color:var(--num)}.type-badge.date,.type-badge.datetime{color:#8a5cf6}.type-badge.boolean{color:#d9770a}.col-sub{color:var(--muted);font-size:11px;margin-top:4px;display:flex;gap:10px;flex-wrap:wrap}.nullbar{height:3px;background:var(--panel-2);border-radius:2px;margin-top:7px;overflow:hidden}.nullbar>i{display:block;height:100%;background:var(--null)}.mini{margin-top:8px}main.main{flex:1;min-width:0;display:flex;flex-direction:column}.detail{border-bottom:1px solid var(--border);background:var(--panel-2);padding:12px 16px;display:none}.detail.show{display:block}.detail .d-head{display:flex;align-items:baseline;gap:12px;margin-bottom:8px}.detail .d-name{font-family:var(--mono);font-weight:700}.stat-grid{display:flex;gap:22px;flex-wrap:wrap;color:var(--muted);font-size:12.5px}.stat-grid b{color:var(--text);font-weight:600;font-variant-numeric:tabular-nums}.table-wrap{flex:1;overflow:auto;position:relative}table{border-collapse:separate;border-spacing:0;width:100%}thead th{position:sticky;top:0;z-index:2;background:var(--panel);text-align:left;padding:8px 12px;border-bottom:1px solid var(--border);font-size:12px;color:var(--muted);font-weight:600;white-space:nowrap;cursor:pointer;user-select:none}thead th:hover{color:var(--text)}thead th .th-type{font-weight:400;opacity:0.7;margin-left:6px;font-size:10.5px}thead th .arrow{color:var(--accent);margin-left:4px}tbody td{padding:6px 12px;border-bottom:1px solid var(--border);white-space:nowrap;max-width:380px;overflow:hidden;text-overflow:ellipsis;font-variant-numeric:tabular-nums}tbody td.num{text-align:right;font-family:var(--mono);color:var(--num)}tbody td.null{color:var(--null);font-style:italic}tbody tr:hover td{background:var(--panel-2)}.rownum{color:var(--muted);font-family:var(--mono);font-size:11px;text-align:right;user-select:none}.footer{flex:0 0 auto;padding:6px 16px;border-top:1px solid var(--border);color:var(--muted);font-size:12px;background:var(--panel);display:flex;gap:16px}.footer a{color:var(--accent);text-decoration:none}.empty{padding:40px;text-align:center;color:var(--muted)}svg.chart{display:block;width:100%}.bar-row{font-size:11px}button.iconbtn.on{border-color:var(--accent);color:var(--accent);background:var(--accent-soft)}.prov-panel{position:absolute;top:52px;right:12px;z-index:20;width:min(420px,calc(100vw - 24px));background:var(--panel);border:1px solid var(--border);border-radius:12px;box-shadow:var(--shadow),0 8px 30px rgba(20,30,50,0.18);overflow:hidden}.prov-head{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid var(--border);font-weight:600;font-size:13px}.prov-close{background:none;border:none;color:var(--muted);cursor:pointer;font-size:14px;line-height:1;padding:2px 4px}.prov-close:hover{color:var(--text)}.prov-body{padding:12px 14px;font-size:13px}.prov-dl{margin:0}.prov-row,.prov-view{display:grid;grid-template-columns:90px 1fr;gap:8px;padding:5px 0}.prov-view{border-top:1px solid var(--border);margin-top:6px;padding-top:9px}.prov-dl dt{color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:0.04em;padding-top:1px}.prov-dl dd{margin:0;word-break:break-word}.prov-dim{color:var(--muted)}.prov-row dd .prov-hash{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;word-break:break-all}.prov-oplist{margin:0;padding-left:18px}.prov-oplist li{margin:1px 0}.prov-tool{margin-top:4px;font-size:11px}.prov-actions{display:flex;align-items:center;gap:10px;margin-top:12px}.prov-copy{background:var(--accent);color:#fff;border:1px solid var(--accent);border-radius:7px;padding:6px 11px;font-size:12.5px;cursor:pointer}.prov-copy:hover{filter:brightness(1.05)}.prov-copied{color:var(--muted);font-size:12px}.prov-foot{color:var(--muted);font-size:11.5px;margin:11px 0 2px}button.iconbtn.active{border-color:var(--accent);color:var(--accent);background:var(--accent-soft)}.sql-panel{border-bottom:1px solid var(--border);background:var(--panel);max-height:55vh;overflow:auto;box-shadow:var(--shadow)}.sql-head{display:flex;align-items:center;justify-content:space-between;padding:9px 16px;border-bottom:1px solid var(--border)}.sql-title{font-weight:600;font-size:13px}.sql-sub{color:var(--muted);font-weight:400}.sql-editor{display:flex;gap:10px;padding:12px 16px;align-items:stretch}.sql-editor textarea{flex:1;min-height:58px;resize:vertical;font-family:var(--mono);font-size:13px;line-height:1.5;color:var(--text);background:var(--panel-2);border:1px solid var(--border);border-radius:8px;padding:9px 11px;outline:none}.sql-editor textarea:focus{border-color:var(--accent)}.sql-actions{display:flex;flex-direction:column;align-items:center;gap:6px;justify-content:center}.sql-run{background:var(--accent);color:#fff;border:none;border-radius:8px;padding:9px 18px;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap}.sql-run:hover{filter:brightness(1.06)}.sql-hint{color:var(--muted);font-size:11px}.sql-grammar{margin:-4px 16px 10px;font-size:11.5px;color:var(--muted);line-height:1.7}.sql-grammar code{font-family:var(--mono);font-size:11px;background:var(--panel-2);border:1px solid var(--border);border-radius:4px;padding:0 4px;color:var(--text)}.sql-gram-label{font-weight:600;color:var(--text);margin-right:2px}.sql-gram-note{display:block;margin-top:3px;opacity:0.85}.sql-msg{margin:0 16px 12px;font-size:12.5px;font-family:var(--mono)}.sql-msg.err{color:#c0392b}[data-theme="dark"] .sql-msg.err{color:#ff7b72}.sql-results{padding:0 16px 14px}.sql-rescount{color:var(--muted);font-size:12px;margin-bottom:6px}.sql-restable{overflow:auto;border:1px solid var(--border);border-radius:8px}table.sql-table{border-collapse:collapse;width:100%;font-size:12.5px}table.sql-table th,table.sql-table td{text-align:left;padding:5px 10px;border-bottom:1px solid var(--border);white-space:nowrap}table.sql-table th{position:sticky;top:0;background:var(--panel-2);color:var(--muted);font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:0.04em}table.sql-table td .null{color:var(--null)}table.sql-table tbody tr:hover{background:var(--accent-soft)}';
 
 // src/render.ts
-var VERSION = true ? "0.14.0" : "0.0.0-dev";
+var VERSION = true ? "0.15.0" : "0.0.0-dev";
 function renderHtml(ds, opts = {}) {
   const rows = ds.rows.map((r) => ds.columns.map((c) => normalize(r[c])));
   const payload = {
@@ -36624,6 +36624,321 @@ function toMarkdown(rows, columns, types) {
   return [head, sep2, body].join("\n");
 }
 
+// src/sql.ts
+var KEYWORDS = /* @__PURE__ */ new Set([
+  "select",
+  "from",
+  "where",
+  "group",
+  "by",
+  "order",
+  "limit",
+  "offset",
+  "and",
+  "as",
+  "asc",
+  "desc",
+  "like",
+  "in"
+]);
+var AGG_FNS = /* @__PURE__ */ new Set(["count", "sum", "avg", "min", "max"]);
+function tokenize(sql) {
+  const toks = [];
+  let i = 0;
+  const n = sql.length;
+  while (i < n) {
+    const c = sql[i];
+    if (/\s/.test(c)) {
+      i++;
+      continue;
+    }
+    if (c === "'" || c === '"') {
+      const q = c;
+      let j = i + 1;
+      let s = "";
+      while (j < n) {
+        if (sql[j] === q) {
+          if (sql[j + 1] === q) {
+            s += q;
+            j += 2;
+            continue;
+          }
+          break;
+        }
+        s += sql[j++];
+      }
+      if (j >= n) return { error: `Unterminated string starting at position ${i}` };
+      toks.push({ t: "str", v: s });
+      i = j + 1;
+      continue;
+    }
+    const two = sql.slice(i, i + 2);
+    if (two === "!=" || two === "<>" || two === ">=" || two === "<=") {
+      toks.push({ t: "op", v: two === "<>" ? "!=" : two });
+      i += 2;
+      continue;
+    }
+    if (c === "=" || c === ">" || c === "<") {
+      toks.push({ t: "op", v: c });
+      i++;
+      continue;
+    }
+    if (c === ",") {
+      toks.push({ t: ",", v: "," });
+      i++;
+      continue;
+    }
+    if (c === "(") {
+      toks.push({ t: "(", v: "(" });
+      i++;
+      continue;
+    }
+    if (c === ")") {
+      toks.push({ t: ")", v: ")" });
+      i++;
+      continue;
+    }
+    if (c === "*") {
+      toks.push({ t: "star", v: "*" });
+      i++;
+      continue;
+    }
+    if (/[0-9]/.test(c) || c === "-" && /[0-9]/.test(sql[i + 1] || "")) {
+      let j = i + 1;
+      while (j < n && /[0-9._]/.test(sql[j])) j++;
+      toks.push({ t: "num", v: sql.slice(i, j) });
+      i = j;
+      continue;
+    }
+    if (c === "`" || c === "[") {
+      const close = c === "`" ? "`" : "]";
+      let j = i + 1;
+      let s = "";
+      while (j < n && sql[j] !== close) s += sql[j++];
+      if (j >= n) return { error: `Unterminated quoted identifier at position ${i}` };
+      toks.push({ t: "ident", v: s });
+      i = j + 1;
+      continue;
+    }
+    if (/[A-Za-z_]/.test(c)) {
+      let j = i + 1;
+      while (j < n && /[A-Za-z0-9_.]/.test(sql[j])) j++;
+      const w = sql.slice(i, j);
+      const lw = w.toLowerCase();
+      toks.push({ t: KEYWORDS.has(lw) ? "kw" : "ident", v: KEYWORDS.has(lw) ? lw : w });
+      i = j;
+      continue;
+    }
+    return { error: `Unexpected character '${c}' at position ${i}` };
+  }
+  return toks;
+}
+function coerce2(raw) {
+  if (raw.t === "num") return Number(raw.v);
+  if (raw.t === "str") return raw.v;
+  const lv = raw.v.toLowerCase();
+  if (lv === "null") return null;
+  if (lv === "true") return true;
+  if (lv === "false") return false;
+  return raw.v;
+}
+function parseSql(sql, columns = []) {
+  const trimmed = sql.trim().replace(/;+\s*$/, "");
+  if (!trimmed) return { error: "Empty query" };
+  const tk = tokenize(trimmed);
+  if ("error" in tk) return { error: tk.error };
+  const toks = tk;
+  let p = 0;
+  const peek = () => toks[p];
+  const eat = () => toks[p++];
+  const isKw = (w) => peek() && peek().t === "kw" && peek().v === w;
+  const colSet = new Set(columns);
+  const known = (c) => colSet.size === 0 || colSet.has(c);
+  if (!isKw("select")) return { error: "Query must start with SELECT" };
+  eat();
+  const spec = {};
+  const selectCols = [];
+  const aggs = [];
+  const outCols = [];
+  let selectStar = false;
+  for (; ; ) {
+    const t = peek();
+    if (!t) return { error: "Unexpected end of query in SELECT list" };
+    const isAggCall = t.t === "ident" && AGG_FNS.has(t.v.toLowerCase()) && toks[p + 1] && toks[p + 1].t === "(";
+    if (t.t === "star") {
+      eat();
+      selectStar = true;
+    } else if (isAggCall) {
+      const fn = t.v.toLowerCase();
+      eat();
+      if (!peek() || peek().t !== "(") return { error: `Expected '(' after ${fn.toUpperCase()}` };
+      eat();
+      let col;
+      if (peek() && peek().t === "star") {
+        eat();
+      } else if (peek() && peek().t === "ident") {
+        col = eat().v;
+      } else return { error: `Expected column or * inside ${fn.toUpperCase()}(...)` };
+      if (!peek() || peek().t !== ")") return { error: `Expected ')' to close ${fn.toUpperCase()}(...)` };
+      eat();
+      if (col && !known(col)) return { error: `Unknown column '${col}'` };
+      let alias;
+      if (isKw("as")) {
+        eat();
+        if (peek() && peek().t === "ident") alias = eat().v;
+        else return { error: "Expected alias after AS" };
+      }
+      const label = alias ?? `${fn}${col ? "_" + col : ""}`;
+      aggs.push({ fn, column: col, as: label });
+      outCols.push(label);
+    } else if (t.t === "ident") {
+      eat();
+      if (!known(t.v)) return { error: `Unknown column '${t.v}'` };
+      let alias;
+      if (isKw("as")) {
+        eat();
+        if (peek() && peek().t === "ident") alias = eat().v;
+        else return { error: "Expected alias after AS" };
+      }
+      selectCols.push(t.v);
+      outCols.push(alias ?? t.v);
+    } else {
+      return { error: `Unexpected token '${t.v}' in SELECT list` };
+    }
+    if (peek() && peek().t === ",") {
+      eat();
+      continue;
+    }
+    break;
+  }
+  if (isKw("from")) {
+    eat();
+    if (peek() && peek().t === "ident") eat();
+    else return { error: "Expected table name after FROM" };
+  }
+  if (isKw("where")) {
+    eat();
+    const where = [];
+    for (; ; ) {
+      const colT = peek();
+      if (!colT || colT.t !== "ident") return { error: "Expected column name in WHERE" };
+      eat();
+      if (!known(colT.v)) return { error: `Unknown column '${colT.v}'` };
+      const opT = peek();
+      if (!opT) return { error: `Expected operator after '${colT.v}'` };
+      let op;
+      if (opT.t === "op") {
+        eat();
+        op = { "=": "eq", "!=": "ne", ">": "gt", ">=": "gte", "<": "lt", "<=": "lte" }[opT.v];
+        const valT = peek();
+        if (!valT || !["num", "str", "ident"].includes(valT.t)) return { error: `Expected value after '${opT.v}'` };
+        eat();
+        where.push({ column: colT.v, op, value: coerce2(valT) });
+      } else if (opT.t === "kw" && opT.v === "like") {
+        eat();
+        const valT = peek();
+        if (!valT || valT.t !== "str") return { error: "LIKE expects a quoted pattern" };
+        eat();
+        where.push({ column: colT.v, op: "contains", value: String(valT.v).replace(/%/g, "") });
+      } else if (opT.t === "kw" && opT.v === "in") {
+        eat();
+        if (!peek() || peek().t !== "(") return { error: "IN expects a parenthesized list" };
+        eat();
+        const vals = [];
+        for (; ; ) {
+          const vT = peek();
+          if (!vT || !["num", "str", "ident"].includes(vT.t)) return { error: "Expected value inside IN (...)" };
+          eat();
+          vals.push(coerce2(vT));
+          if (peek() && peek().t === ",") {
+            eat();
+            continue;
+          }
+          break;
+        }
+        if (!peek() || peek().t !== ")") return { error: "Expected ')' to close IN (...)" };
+        eat();
+        where.push({ column: colT.v, op: "in", value: vals });
+      } else {
+        return { error: `Unsupported operator '${opT.v}' in WHERE` };
+      }
+      if (isKw("and")) {
+        eat();
+        continue;
+      }
+      break;
+    }
+    spec.where = where;
+  }
+  if (isKw("group")) {
+    eat();
+    if (!isKw("by")) return { error: "Expected BY after GROUP" };
+    eat();
+    const gb = [];
+    for (; ; ) {
+      const t = peek();
+      if (!t || t.t !== "ident") return { error: "Expected column in GROUP BY" };
+      eat();
+      if (!known(t.v)) return { error: `Unknown column '${t.v}'` };
+      gb.push(t.v);
+      if (peek() && peek().t === ",") {
+        eat();
+        continue;
+      }
+      break;
+    }
+    spec.group_by = gb;
+  }
+  if (isKw("order")) {
+    eat();
+    if (!isKw("by")) return { error: "Expected BY after ORDER" };
+    eat();
+    const t = peek();
+    if (!t || t.t !== "ident") return { error: "Expected column in ORDER BY" };
+    eat();
+    if (!known(t.v) && !outCols.includes(t.v)) return { error: `Unknown column '${t.v}'` };
+    let dir = "asc";
+    if (isKw("asc")) eat();
+    else if (isKw("desc")) {
+      eat();
+      dir = "desc";
+    }
+    spec.order_by = { column: t.v, dir };
+  }
+  for (let guard = 0; guard < 2; guard++) {
+    if (isKw("limit")) {
+      eat();
+      const t = peek();
+      if (!t || t.t !== "num") return { error: "LIMIT expects a number" };
+      eat();
+      spec.limit = Math.max(0, Math.floor(Number(t.v)));
+    } else if (isKw("offset")) {
+      eat();
+      const t = peek();
+      if (!t || t.t !== "num") return { error: "OFFSET expects a number" };
+      eat();
+      spec.offset = Math.max(0, Math.floor(Number(t.v)));
+    } else break;
+  }
+  if (peek()) return { error: `Unexpected trailing input near '${peek().v}'` };
+  const hasAgg = aggs.length > 0;
+  if (hasAgg || spec.group_by && spec.group_by.length) {
+    spec.aggregate = aggs.length ? aggs : [{ fn: "count", as: "count" }];
+    const cols = [...spec.group_by ?? [], ...spec.aggregate.map((a) => a.as ?? `${a.fn}${a.column ? "_" + a.column : ""}`)];
+    for (const c of selectCols) {
+      if (!(spec.group_by ?? []).includes(c)) {
+        return { error: `Column '${c}' must appear in GROUP BY or an aggregate` };
+      }
+    }
+    return { spec, columns: cols };
+  }
+  if (!selectStar && selectCols.length) {
+    spec.select = selectCols;
+    return { spec, columns: outCols };
+  }
+  return { spec, columns: columns.length ? columns : void 0 };
+}
+
 // src/provenance.ts
 import { createReadStream as createReadStream2 } from "node:fs";
 import { createHash } from "node:crypto";
@@ -36909,6 +37224,39 @@ server.registerTool(
       const ds = await buildDataset(abs);
       const rows = runQuery(ds.rows, q);
       const cols = rows.length ? Object.keys(rows[0]) : ds.columns;
+      return ok(`${rows.length} row(s)
+
+` + toMarkdown(rows, cols, ds.types));
+    } catch (e) {
+      return fail(e);
+    }
+  }
+);
+server.registerTool(
+  "sql_query",
+  {
+    title: "Query a data file with SQL",
+    description: "Run a read-only SQL SELECT over a local data file and get a Markdown table back. Supports: SELECT * | <cols> | aggregates COUNT/SUM/AVG/MIN/MAX, WHERE (=, !=, >, >=, <, <=, LIKE, IN) with AND, GROUP BY, ORDER BY [ASC|DESC], LIMIT, OFFSET. The table name in FROM is ignored (single-table). No writes, no arbitrary SQL execution \u2014 the query string is compiled to a safe read-only plan (no eval), and the file is never modified.",
+    inputSchema: {
+      path: external_exports.string().describe("Path to the data file."),
+      sql: external_exports.string().describe(
+        "A single SELECT statement, e.g. `SELECT species, AVG(body_mass_g) AS avg_mass FROM t GROUP BY species ORDER BY avg_mass DESC LIMIT 5`. Column names must match the file's headers."
+      )
+    },
+    annotations: { readOnlyHint: true, openWorldHint: false }
+  },
+  async ({ path: p, sql }) => {
+    try {
+      const abs = await resolveInput(p);
+      const ds = await buildDataset(abs);
+      const parsed = parseSql(sql, ds.columns);
+      if (parsed.error || !parsed.spec) {
+        return fail(
+          `SQL error: ${parsed.error ?? "could not parse query"}. Available columns: ${ds.columns.join(", ")}.`
+        );
+      }
+      const rows = runQuery(ds.rows, parsed.spec);
+      const cols = parsed.columns && parsed.columns.length ? parsed.columns : rows.length ? Object.keys(rows[0]) : ds.columns;
       return ok(`${rows.length} row(s)
 
 ` + toMarkdown(rows, cols, ds.types));

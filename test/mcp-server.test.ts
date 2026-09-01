@@ -80,6 +80,7 @@ describe("dataloupe MCP server (stdio)", () => {
           "list_data_files",
           "preview_data",
           "query_data",
+          "sql_query",
           "visualize_data",
         ].sort(),
       );
@@ -94,6 +95,17 @@ describe("dataloupe MCP server (stdio)", () => {
       });
       expect(q.result.content[0].text).toContain("Eng");
       expect(q.result.content[0].text).toContain("110");
+
+      const sql = await c.call("sql_query", {
+        path: csv,
+        sql: "SELECT dept, AVG(salary) AS avg FROM t GROUP BY dept ORDER BY avg DESC",
+      });
+      expect(sql.result.content[0].text).toContain("Eng");
+      expect(sql.result.content[0].text).toContain("110");
+
+      const sqlBad = await c.call("sql_query", { path: csv, sql: "DELETE FROM t" });
+      expect(sqlBad.result.isError).toBe(true);
+      expect(sqlBad.result.content[0].text.toLowerCase()).toContain("sql error");
 
       const vis = await c.call("visualize_data", { path: csv, out_path: html });
       expect(vis.result.content[0].text).toContain(html);

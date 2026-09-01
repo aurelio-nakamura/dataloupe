@@ -310,6 +310,7 @@ Tools exposed:
 | `describe_data` | Schema + row/column counts + per-column stats (types, nulls, unique, min/max/mean/median, top values) |
 | `preview_data` | First N rows as a Markdown table |
 | `query_data` | Read-only structured query: `where` / `select` / `order_by` / `limit` / `group_by` + `count/sum/avg/min/max` aggregations |
+| `sql_query` | Read-only **SQL** `SELECT` over a file (WHERE/GROUP BY/ORDER BY/LIMIT + aggregates) — compiled to a safe plan, no eval, no writes. Handy because LLMs emit SQL more naturally than structured filters |
 | `visualize_data` | **Write a self-contained, offline, interactive HTML explorer** (optionally of a query result) and return its path |
 | `diff_data` | git-style diff of two files (added/removed/changed counts + optional offline HTML report) |
 

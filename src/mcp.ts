@@ -27,6 +27,7 @@ import {
 } from "./index.js";
 import type { Row, ColumnStats, Provenance } from "./types.js";
 import { runQuery, toMarkdown, type QuerySpec } from "./mcp-query.js";
+import { parseSql } from "./sql.js";
 import { hashFile, describeQuery } from "./provenance.js";
 
 const SUPPORTED = new Set([
@@ -351,6 +352,50 @@ server.registerTool(
       const ds = await buildDataset(abs);
       const rows = runQuery(ds.rows, q as QuerySpec);
       const cols = rows.length ? Object.keys(rows[0]) : ds.columns;
+      return ok(`${rows.length} row(s)\n\n` + toMarkdown(rows, cols, ds.types));
+    } catch (e) {
+      return fail(e);
+    }
+  },
+);
+
+server.registerTool(
+  "sql_query",
+  {
+    title: "Query a data file with SQL",
+    description:
+      "Run a read-only SQL SELECT over a local data file and get a Markdown table back. " +
+      "Supports: SELECT * | <cols> | aggregates COUNT/SUM/AVG/MIN/MAX, WHERE (=, !=, >, >=, <, <=, LIKE, IN) with AND, " +
+      "GROUP BY, ORDER BY [ASC|DESC], LIMIT, OFFSET. The table name in FROM is ignored (single-table). " +
+      "No writes, no arbitrary SQL execution — the query string is compiled to a safe read-only plan (no eval), and the file is never modified.",
+    inputSchema: {
+      path: z.string().describe("Path to the data file."),
+      sql: z
+        .string()
+        .describe(
+          'A single SELECT statement, e.g. `SELECT species, AVG(body_mass_g) AS avg_mass FROM t GROUP BY species ORDER BY avg_mass DESC LIMIT 5`. Column names must match the file\'s headers.',
+        ),
+    },
+    annotations: { readOnlyHint: true, openWorldHint: false },
+  },
+  async ({ path: p, sql }) => {
+    try {
+      const abs = await resolveInput(p);
+      const ds = await buildDataset(abs);
+      const parsed = parseSql(sql, ds.columns);
+      if (parsed.error || !parsed.spec) {
+        return fail(
+          `SQL error: ${parsed.error ?? "could not parse query"}. ` +
+            `Available columns: ${ds.columns.join(", ")}.`,
+        );
+      }
+      const rows = runQuery(ds.rows, parsed.spec);
+      const cols =
+        parsed.columns && parsed.columns.length
+          ? parsed.columns
+          : rows.length
+            ? Object.keys(rows[0])
+            : ds.columns;
       return ok(`${rows.length} row(s)\n\n` + toMarkdown(rows, cols, ds.types));
     } catch (e) {
       return fail(e);
